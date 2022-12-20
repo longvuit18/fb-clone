@@ -18,7 +18,7 @@ import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import ImagePost from "./Image";
 
-function ViewPost({ visible, handleEventShow, data }) {
+function ViewPost({ visible, handleEventShow, data }: any) {
   const [modalVisible, setModalVisible] = useState(visible);
 
   const hiddenModal = () => {
@@ -92,7 +92,7 @@ function ViewPost({ visible, handleEventShow, data }) {
                 <Icon
                   name="thumbs-up"
                   color="#318bfb"
-                  backgroundColor="white"
+                  // backgroundColor="white"
                   style={{ marginRight: 5 }}
                 ></Icon>
                 <Text style={{ color: "#fff" }}>{data.numberLike}</Text>
@@ -115,7 +115,7 @@ function ViewPost({ visible, handleEventShow, data }) {
                   <Icon
                     name="thumbs-up"
                     color="#fff"
-                    backgroundColor="white"
+                    // backgroundColor="white"
                     style={styles.iconBtnOption}
                   ></Icon>
                   <Text style={{ color: "#fff" }}>Thích</Text>
@@ -126,7 +126,7 @@ function ViewPost({ visible, handleEventShow, data }) {
                   <Icon
                     name="comment-alt"
                     color="gray"
-                    backgroundColor="white"
+                    // backgroundColor="white"
                     style={styles.iconBtnOption}
                   ></Icon>
                   <Text style={{ color: "#fff" }}>Bình luận</Text>
@@ -135,7 +135,7 @@ function ViewPost({ visible, handleEventShow, data }) {
                   <Icon
                     name="share"
                     color="gray"
-                    backgroundColor="white"
+                    // backgroundColor="white"
                     style={styles.iconBtnOption}
                   ></Icon>
                   <Text style={{ color: "#fff" }}>Chia sẻ</Text>
@@ -193,7 +193,7 @@ function ViewPost({ visible, handleEventShow, data }) {
                   <Icon
                     name="thumbs-up"
                     color="#318bfb"
-                    backgroundColor="white"
+                    // backgroundColor="white"
                     style={{ marginRight: 5 }}
                   ></Icon>
                   <Text style={{ color: "#babec5" }}>{data.numberLike}</Text>
@@ -216,7 +216,7 @@ function ViewPost({ visible, handleEventShow, data }) {
                     <Icon
                       name="thumbs-up"
                       color="#318bfb"
-                      backgroundColor="white"
+                      // backgroundColor="white"
                       style={styles.iconBtnOption}
                     ></Icon>
                     <Text style={{ color: "#318bfb" }}>Thích</Text>
@@ -227,7 +227,7 @@ function ViewPost({ visible, handleEventShow, data }) {
                     <Icon
                       name="comment-alt"
                       color="gray"
-                      backgroundColor="white"
+                      // backgroundColor="white"
                       style={styles.iconBtnOption}
                     ></Icon>
                     <Text style={{ color: "#babec5" }}>Bình luận</Text>
@@ -236,7 +236,7 @@ function ViewPost({ visible, handleEventShow, data }) {
                     <Icon
                       name="share"
                       color="gray"
-                      backgroundColor="white"
+                      // backgroundColor="white"
                       style={styles.iconBtnOption}
                     ></Icon>
                     <Text style={{ color: "#babec5" }}>Chia sẻ</Text>
@@ -245,7 +245,7 @@ function ViewPost({ visible, handleEventShow, data }) {
               </View>
             </View>
             {data.numberImage > 1 &&
-              data.lstImage.map((image, index) => (
+              data.lstImage.map((image: string, index: number) => (
                 <ImagePost key={index} urlImage={image} />
               ))}
           </ScrollView>

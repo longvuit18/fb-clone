@@ -12,14 +12,14 @@ import {
   ScrollView,
   BackHandler,
   Alert, 
+  TextInput
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { TextInput } from 'react-native-paper';
 import Skeleton from '../Skeleton';
 
-function Comment({ visible, handleEventShow }) {
+function Comment({ visible, handleEventShow }: any) {
   const [modalVisible, setModalVisible] = useState(visible);
   const [isLoading, setIsLoading] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
@@ -79,7 +79,7 @@ function Comment({ visible, handleEventShow }) {
                     <Icon
                         name="thumbs-up"
                         color="#318bfb"
-                        backgroundColor="white"
+                        // backgroundColor="white"
                         style={{ marginRight: 5 }}>    
                     </Icon>
                     <Text style={{fontWeight: "900"}}>190</Text>
@@ -91,12 +91,12 @@ function Comment({ visible, handleEventShow }) {
                     <Icon
                         name="thumbs-up"
                         color="#318bfb"
-                        backgroundColor="white"
+                        // backgroundColor="white"
                         style={{ marginRight: 5, fontSize: 20 }}>    
                     </Icon>
                 </TouchableOpacity>
             </View>
-            <View style={styles.content}>
+            <View>
                 {isLoading && 
                   <View>
                     <View style={{flexDirection: 'row', paddingHorizontal: 10, paddingVertical: 20}}>
@@ -154,7 +154,7 @@ function Comment({ visible, handleEventShow }) {
                             style={styles.avatar}
                             source={{uri: comment.avatar}}
                         />
-                        <View style={styles.contentComment}>
+                        <View>
                             <View style={styles.comment}>
                               <Text style={{fontWeight: "900"}}>{comment.author}</Text>
                               <Text>{comment.content}</Text>
@@ -182,7 +182,7 @@ function Comment({ visible, handleEventShow }) {
               <TextInput 
               placeholder="Viết bình luận..."
               placeholderTextColor="#babec5"
-              underlineColor="transparent"
+              // underlineColor="transparent"
               style={styles.textInput}
               />
               <Image 

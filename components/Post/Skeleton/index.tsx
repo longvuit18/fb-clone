@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, View, Text } from "react-native";
 
 
-function Skeleton({width, height, style}) {
+function Skeleton({width, height, style}: any) {
     const translateX = useRef(new Animated.Value(-width)).current;
 
     useEffect(()=>{

@@ -11,11 +11,11 @@ import {
   Modal,
   ScrollView,
   StatusBar,
+  TextInput
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { TextInput } from 'react-native-paper';
 
 const lstEmoji = [
     [
@@ -73,12 +73,15 @@ const lstActivities = [
     ],
 ]
 
-function EmojiAction({ visible, handleEventShow }) {
+function EmojiAction({ visible, handleEventShow }: any) {
   const [modalVisible, setModalVisible] = useState(visible);
   const [showSearch, setShowSearch] = useState(true);
   const [tabActive, setTabActive] = useState(0);
 
-  const [curEmoji, setCurEmoji] = useState({
+  const [curEmoji, setCurEmoji] = useState<{
+    value: string;
+    icon: any;
+} | null>({
     value: "hạnh phúc",
     icon: require("../../../assets/icon/happy.png")
   })
@@ -138,7 +141,7 @@ function EmojiAction({ visible, handleEventShow }) {
                         <TextInput 
                             placeholder="Tìm kiếm"
                             placeholderTextColor="#babec5"
-                            underlineColor="transparent"
+                            // underlineColor="transparent"
                             style={styles.textInput}
                         />
                     </View>
@@ -146,11 +149,11 @@ function EmojiAction({ visible, handleEventShow }) {
                 {!showSearch &&
                     <View style={styles.search}>
                         <Image
-                            source={curEmoji.icon}
+                            source={curEmoji?.icon}
                             style={{ width: 20, height: 20 }}
                             resizeMode={"cover"}
                         />
-                        <Text style={{marginLeft: 10}}>{curEmoji.value}</Text>
+                        <Text style={{marginLeft: 10}}>{curEmoji?.value}</Text>
                         <View style={{flex: 1}}></View>
                         <TouchableOpacity onPress={handleDeleteCurEmoji}>
                             <Text>X</Text>

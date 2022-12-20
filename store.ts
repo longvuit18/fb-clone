@@ -22,4 +22,4 @@ export const initData: IStore = {
 
 export const StoreContext = React.createContext<IStore>(initData);
 
-export const useStore = React.useContext(StoreContext);
+export const useStore = () => React.useContext(StoreContext);

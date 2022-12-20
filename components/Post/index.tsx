@@ -13,12 +13,12 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import VideoPlayer from 'react-native-video';
+// import VideoPlayer from 'react-native-video';
 import PostOption from "./PostOption";
 import Comment from "./Comment";
 import ViewPost from "./ViewPost";
 
-function Post({ data}) {
+function Post({ data}: any) {
   const [visibleOption, setVisibleOption] = useState(false);
   const [visibleComment, setVisibleComment] = useState(false);
   const [visibleViewPost, setVisibleViewPost] = useState(false);
@@ -202,10 +202,10 @@ function Post({ data}) {
             )}
             {data.hasVideo && (
               <View style={[styles.fourImage, { overflow: 'hidden' }]}>
-                <VideoPlayer
+                {/* <VideoPlayer
                   video={{ uri: 'https://vjs.zencdn.net/v/oceans.mp4' }}
                   style={{height: 250}}
-                />
+                /> */}
               </View>
             )}
           </TouchableOpacity>
@@ -222,7 +222,7 @@ function Post({ data}) {
             <Icon
               name="thumbs-up"
               color="#318bfb"
-              backgroundColor="white"
+              // backgroundColor="white"
               style={{ marginRight: 5 }}></Icon>
             <Text style={{ color: '#babec5' }}>{data.numberLike}</Text>
             <View style={{ display: 'flex', flex: 1 }}>
@@ -236,7 +236,7 @@ function Post({ data}) {
               <Icon
                 name="thumbs-up"
                 color="#318bfb"
-                backgroundColor="white"
+                // backgroundColor="white"
                 style={styles.iconBtnOption}></Icon>
               <Text style={{ color: '#318bfb' }}>Thích</Text>
             </TouchableOpacity>
@@ -244,7 +244,7 @@ function Post({ data}) {
               <Icon
                 name="comment-alt"
                 color="gray"
-                backgroundColor="white"
+                // backgroundColor="white"
                 style={styles.iconBtnOption}></Icon>
               <Text style={{ color: '#babec5' }}>Bình luận</Text>
             </TouchableOpacity>
@@ -252,7 +252,7 @@ function Post({ data}) {
               <Icon
                 name="share"
                 color="gray"
-                backgroundColor="white"
+                // backgroundColor="white"
                 style={styles.iconBtnOption}></Icon>
               <Text style={{ color: '#babec5' }}>Chia sẻ</Text>
             </TouchableOpacity>

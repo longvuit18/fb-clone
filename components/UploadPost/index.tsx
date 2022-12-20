@@ -9,18 +9,18 @@ import {
   ScrollView,
   ImageBackground,
   Modal,
+  TextInput
 } from "react-native";
 
 import Icon from "react-native-vector-icons/FontAwesome5";
 import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Button, TextInput } from "react-native-paper";
 import { useEffect, useState, useRef } from "react";
 import BackNoti from "./BackNoti";
 import EmojiAction from "./EmojiAction";
 
 function UploadPost() {
-  const inputRef = useRef();
+  let inputRef = useRef<TextInput>(null);
   const [showFooter, setShowFooter] = useState(true);
   const [isFocus, setIsFocus] = useState(false);
   const [media, setMedia] = useState({
@@ -42,7 +42,7 @@ function UploadPost() {
     }
     else{
       setIsFocus(false);
-      inputRef?.current?.blur();
+      (inputRef?.current as any)?.blur();
     }
   }
 
@@ -76,7 +76,7 @@ function UploadPost() {
         <Text style={{ marginLeft: 10 }}>Tạo bài viết</Text>
         <View style={{ flex: 1 }}></View>
         <TouchableOpacity style={[styles.btnPost, styles.btnPostActive]}>
-          <Text style={[styles.txtBtn, styles.txtBtnActive]}>Đăng</Text>
+          <Text style={[ styles.txtBtnActive]}>Đăng</Text>
         </TouchableOpacity>
       </View>
       <ScrollView style={styles.content}>
@@ -89,7 +89,7 @@ function UploadPost() {
               height: 70,
             }}
           >
-            <TouchableOpacity style={styles.avatarContainer}>
+            <TouchableOpacity>
               <Image
                 resizeMode="cover"
                 style={styles.avatar}
@@ -115,9 +115,9 @@ function UploadPost() {
               editable
               placeholder="Bạn đang nghĩ gì?"
               placeholderTextColor="grey"
-              underlineColor="transparent"
+              // underlineColor="transparent"
               style={[styles.textInput]}
-              ref={inputRef}
+              ref={(r) => inputRef = r as any}
               onFocus={onFocusInput}
             />
           </View>
@@ -225,14 +225,6 @@ function UploadPost() {
                         />
                       </TouchableOpacity>
                     </View>
-                  </View>
-                )}
-                {media.hasVideo && (
-                  <View style={[styles.fourImage, { overflow: 'hidden' }]}>
-                    <VideoPlayer
-                      video={{ uri: 'https://vjs.zencdn.net/v/oceans.mp4' }}
-                      style={{height: 250}}
-                    />
                   </View>
                 )}
               </View>

@@ -17,7 +17,7 @@ import Icon from "react-native-vector-icons/FontAwesome5";
 import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-function ImagePost({urlImage}) {
+function ImagePost({urlImage}: {urlImage: string}) {
   return (
     <View style={styles.imageContent}>
       <Image style={styles.image} source={{ uri: urlImage }} />
@@ -33,7 +33,7 @@ function ImagePost({urlImage}) {
         <Icon
           name="thumbs-up"
           color="#318bfb"
-          backgroundColor="white"
+          // backgroundColor="white"
           style={{ marginRight: 5 }}
         ></Icon>
         <Text style={{ color: "#babec5" }}>50</Text>
@@ -58,7 +58,7 @@ function ImagePost({urlImage}) {
           <Icon
             name="thumbs-up"
             color="#318bfb"
-            backgroundColor="white"
+            // backgroundColor="white"
             style={styles.iconBtnOption}
           ></Icon>
           <Text style={{ color: "#318bfb" }}>Thích</Text>
@@ -67,7 +67,7 @@ function ImagePost({urlImage}) {
           <Icon
             name="comment-alt"
             color="gray"
-            backgroundColor="white"
+            // backgroundColor="white"
             style={styles.iconBtnOption}
           ></Icon>
           <Text style={{ color: "#babec5" }}>Bình luận</Text>
@@ -76,7 +76,7 @@ function ImagePost({urlImage}) {
           <Icon
             name="share"
             color="gray"
-            backgroundColor="white"
+            // backgroundColor="white"
             style={styles.iconBtnOption}
           ></Icon>
           <Text style={{ color: "#babec5" }}>Chia sẻ</Text>

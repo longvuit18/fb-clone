@@ -1,4 +1,4 @@
-import React, { uStatusBarseState } from "react";
+import React from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -187,66 +187,10 @@ function Home() {
             <Icon
               name="search"
               color="#000"
-              backgroundColor="white"
+              // backgroundColor="white"
               style={{ fontSize: 15, textAlign: 'center' }}></Icon>
           </TouchableOpacity>
-        </View>
-        <View style={styles.page}>
-          <View style={{flexDirection: "row"}}>
-            <TouchableOpacity style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-              <Icon
-                name="home"
-                color="#1877f2"
-                backgroundColor="white"
-                style={[
-                  styles.pageIcon,
-                  { fontSize: 20, textAlign: 'center' },
-                ]}></Icon>
-              <View style={styles.pageIconActive}></View>
-            </TouchableOpacity>
-            <TouchableOpacity style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-              <Icon
-                name="user"
-                color="#babec5"
-                backgroundColor="white"
-                style={[
-                  styles.pageIcon,
-                  { fontSize: 20, textAlign: 'center' },
-                ]}></Icon>
-            </TouchableOpacity>
-            <TouchableOpacity style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-              <Icon
-                name="video"
-                color="#babec5"
-                backgroundColor="white"
-                style={[
-                  styles.pageIcon,
-                  { fontSize: 20, textAlign: 'center' },
-                ]}></Icon>
-            </TouchableOpacity>
-            <TouchableOpacity style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-              <Icon
-                name="bell"
-                color="#babec5"
-                backgroundColor="white"
-                style={[
-                  styles.pageIcon,
-                  { fontSize: 20, textAlign: 'center' },
-                ]}></Icon>
-            </TouchableOpacity>
-            <TouchableOpacity style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-              <Icon
-                name="bars"
-                color="#babec5"
-                backgroundColor="white"
-                style={[
-                  styles.pageIcon,
-                  { fontSize: 20, textAlign: 'center' },
-                ]}></Icon>
-            </TouchableOpacity>
-          </View>
-
-        </View>
+        </View> 
         <View
           style={{
             flexDirection: 'row',

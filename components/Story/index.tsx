@@ -1,6 +1,6 @@
 import { SafeAreaView, TouchableOpacity, View, Text, StyleSheet, Image } from "react-native";
 
-function Story({source}) {
+function Story({source}: any) {
     return ( 
         <SafeAreaView style={styles.container}>
           <TouchableOpacity style={{flex: 1,}}>

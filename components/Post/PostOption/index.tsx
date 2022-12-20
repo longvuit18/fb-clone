@@ -14,7 +14,7 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-function PostOption({ visible, handleEventShow }) {
+function PostOption({ visible, handleEventShow }: any) {
   const [modalVisible, setModalVisible] = useState(visible);
 
   const hiddenModal = () => {
@@ -36,30 +36,30 @@ function PostOption({ visible, handleEventShow }) {
         <TouchableOpacity style={styles.centeredView} onPress={hiddenModal}></TouchableOpacity>
         <View style={styles.modalView}>
           <TouchableOpacity style={styles.itemOption}>
-            <Icon name="bell" color="#000" backgroundColor="white" style={{fontSize: 20}}></Icon>
+            <Icon name="bell" color="#000" style={{fontSize: 20}}></Icon>
             <Text style={{marginLeft: 5}}>Tắt thông báo bài viết này</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.itemOption}>
-            <Icon name="bookmark" color="#000" backgroundColor="white" style={{fontSize: 20}}></Icon>
+            <Icon name="bookmark" color="#000" style={{fontSize: 20}}></Icon>
             <View style={{flexDirection: 'column', marginLeft: 10}}>
               <Text>Lưu bài viết</Text>
               <Text style={{fontSize: 10}}>Thêm vào danh sách các mục đã lưu</Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity style={styles.itemOption}>
-            <Icon name="trash" color="#000" backgroundColor="white" style={{fontSize: 20}}></Icon>
+            <Icon name="trash" color="#000" style={{fontSize: 20}}></Icon>
             <Text style={{marginLeft: 10}}>Xoá</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.itemOption}>
-            <Icon name="pen" color="#000" backgroundColor="white" style={{fontSize: 20}}></Icon>
+            <Icon name="pen" color="#000" style={{fontSize: 20}}></Icon>
             <Text style={{marginLeft: 7}}>Chỉnh sửa bài viết</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.itemOption}>
-            <Icon name="link" color="#000" backgroundColor="white" style={{fontSize: 20}}></Icon>
+            <Icon name="link" color="#000" style={{fontSize: 20}}></Icon>
             <Text style={{marginLeft: 7}}>Sao chép liên kết</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.itemOption}>
-            <Icon name="square" color="#000" backgroundColor="white" style={{fontSize: 20}}></Icon>
+            <Icon name="square" color="#000" style={{fontSize: 20}}></Icon>
             <View style={{flexDirection: 'column', marginLeft: 10}}>
               <Text>Tìm hỗ trợ hoặc báo cáo bài viết</Text>
               <Text style={{fontSize: 10}}>Tôi lo ngại về bài viết này</Text>
