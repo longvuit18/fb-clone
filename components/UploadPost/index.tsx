@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
   },
   oneImage: {
     flex: 1,
-    backgroundColor: 'red',
+    // backgroundColor: 'red',
   },
   twoImage: {
     flex: 1,
