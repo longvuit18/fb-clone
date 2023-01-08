@@ -10,9 +10,12 @@ import {
   Button,
   Modal,
   ScrollView,
-  BackHandler,
   Alert,
+  Dimensions,
+  Animated,
 } from "react-native";
+import GestureRecognizer from 'react-native-swipe-gestures';
+import ImageViewer from 'react-native-image-zoom-viewer';
 import Icon from "react-native-vector-icons/FontAwesome5";
 import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -20,6 +23,35 @@ import ImagePost from "./Image";
 
 function ViewPost({ visible, handleEventShow, data }: any) {
   const [modalVisible, setModalVisible] = useState(visible);
+  const [contentPost, setContentPost] = useState(()=>{
+    if(data.contentPost.length > 200){
+      let content = data.contentPost.substr(0, 200);
+      if(content[content.length - 1] != ' '){
+        let index = content.lastIndexOf(" ");
+        content = content.substr(0, index);
+        return content;
+      }
+    }
+    else{
+      return data.contentPost
+    }
+  })
+
+  const [showSeeMore, setShowSeeMore] = useState(()=>{
+    if(data.contentPost.length > 200){
+      return true;
+    }
+    else{
+      return false;
+    }
+  })
+
+  const images = [
+    {
+      url: data.urlImage[0],
+      props: {}
+    }
+  ]
 
   const hiddenModal = () => {
     setModalVisible(false);
@@ -30,227 +62,266 @@ function ViewPost({ visible, handleEventShow, data }: any) {
     setModalVisible(visible);
   }, [visible]);
 
-  const handleBackButtonClick = () => {
-    hiddenModal();
-    return true;
-  };
-
-  useEffect(() => {
-    BackHandler.addEventListener("hardwareBackPress", handleBackButtonClick);
-    return () => {
-      BackHandler.removeEventListener(
-        "hardwareBackPress",
-        handleBackButtonClick
-      );
-    };
-  }, []);
+  const handleSeeMore = () => {
+    setShowSeeMore(false);
+    setContentPost(data.contentPost);
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <Modal animationType="none" transparent={true} visible={modalVisible}>
-        {data.numberImage == 1 && (
-          <View style={styles.blackBackground}>
-            <View style={styles.blackContent}>
-              <Image
-                style={styles.backgroundImage}
-                resizeMode="contain"
-                source={{ uri: data.lstImage[0] }}
-              />
-              <View style={{ width: "100%", flexDirection: "column", position: "absolute", bottom: 8 }}>
-                  <Text
-                    style={{ fontSize: 15, fontWeight: "600", marginBottom: 4, color: "#fff", paddingLeft: 10 }}
+      <GestureRecognizer
+        style={{flex: 1}}
+        onSwipeUp={hiddenModal}
+        onSwipeDown={hiddenModal}
+        onSwipeRight={hiddenModal}
+      >
+        <Modal 
+          animationType="none" 
+          transparent={true} 
+          visible={modalVisible}
+          onRequestClose={hiddenModal}
+        >
+          {data.numberImage == 1 && (
+              <View style={styles.blackBackground}>
+                  <View style={styles.blackContent}>
+                    <ImageViewer 
+                      imageUrls={images}
+                    />
+                    {/* <Image
+                        style={styles.backgroundImage}
+                        resizeMode="contain"
+                        source={{ uri: data.urlImage[0] }}
+                    /> */}
+                    
+                    <View style={{ width: "100%", flexDirection: "column", position: "absolute", bottom: 8 }}>
+                        <Text
+                          style={{ fontSize: 15, fontWeight: "600", marginBottom: 4, color: "#fff", paddingLeft: 10 }}
+                        >
+                          {data.authorName}
+                        </Text>
+                        <View style={styles.content}>
+                          <Text style={{color: "#fff"}}>
+                            {contentPost}
+                            {showSeeMore && (
+                              <TouchableOpacity onPress={handleSeeMore}>
+                                <Text style={{ color: "#fff", fontWeight: "600" }}>
+                                  ... Xem thêm
+                                </Text>
+                              </TouchableOpacity>
+                              
+                            )}
+                            
+                          </Text>
+                        </View>
+                        <View style={{ flexDirection: "row", alignItems: "center", paddingLeft: 10 }}>
+                          <Text
+                            style={{ marginRight: 5, fontSize: 11, color: "#babec5"}}
+                          >
+                            {data.timePost}
+                          </Text>
+                          <FontAwesome5Icon color="#babec5" name="globe-asia" />
+                        </View>
+                      </View>
+                  </View>
+                
+
+                <View>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingHorizontal: 10,
+                      marginBottom: 5,
+                    }}
                   >
-                    {data.authorName}
-                  </Text>
-                  <View style={styles.content}>
-                    <Text style={{color: "#fff"}}>
-                      {data.contentPost}
-                      <Text style={{ color: "#fff", fontWeight: "600" }}>
-                        ... Xem thêm
-                      </Text>
-                    </Text>
-                  </View>
-                  <View style={{ flexDirection: "row", alignItems: "center", paddingLeft: 10 }}>
-                    <Text
-                      style={{ marginRight: 5, fontSize: 11, color: "#babec5"}}
-                    >
-                      {data.timePost}
-                    </Text>
-                    <FontAwesome5Icon color="#babec5" name="globe-asia" />
-                  </View>
-                </View>
-            </View>
-            <View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  paddingHorizontal: 10,
-                  marginBottom: 5,
-                }}
-              >
-                <Icon
-                  name="thumbs-up"
-                  color="#318bfb"
-                  // backgroundColor="white"
-                  style={{ marginRight: 5 }}
-                ></Icon>
-                <Text style={{ color: "#fff" }}>{data.numberLike}</Text>
-                <View style={{ display: "flex", flex: 1 }}>
-                  <Text style={{ color: "#fff", textAlign: "right" }}>
-                    {data.textComment}
-                  </Text>
-                </View>
-              </View>
-              <View
-                style={{
-                  height: 40,
-                  flexDirection: "row",
-                  paddingHorizontal: 10,
-                  borderTopWidth: 1,
-                  borderColor: "#babec5",
-                }}
-              >
-                <TouchableOpacity style={styles.btnOption}>
-                  <Icon
-                    name="thumbs-up"
-                    color="#fff"
-                    // backgroundColor="white"
-                    style={styles.iconBtnOption}
-                  ></Icon>
-                  <Text style={{ color: "#fff" }}>Thích</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.btnOption, { marginRight: 15 }]}
-                >
-                  <Icon
-                    name="comment-alt"
-                    color="gray"
-                    // backgroundColor="white"
-                    style={styles.iconBtnOption}
-                  ></Icon>
-                  <Text style={{ color: "#fff" }}>Bình luận</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.btnOption}>
-                  <Icon
-                    name="share"
-                    color="gray"
-                    // backgroundColor="white"
-                    style={styles.iconBtnOption}
-                  ></Icon>
-                  <Text style={{ color: "#fff" }}>Chia sẻ</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        )}
-
-        {data.numberImage != 1 && (
-          <ScrollView style={styles.centeredView}>
-            <View style={{ flex: 1 }}>
-              <View style={styles.author}>
-                <TouchableOpacity>
-                  <Image
-                    style={styles.avatar}
-                    source={{ uri: data.urlAvatar }}
-                  />
-                </TouchableOpacity>
-
-                <View style={{ width: "80%", flexDirection: "column" }}>
-                  <Text
-                    style={{ fontSize: 15, fontWeight: "600", marginBottom: 4 }}
-                  >
-                    {data.authorName}
-                  </Text>
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Text
-                      style={{ marginRight: 5, fontSize: 11, color: "#babec5" }}
-                    >
-                      {data.timePost}
-                    </Text>
-                    <FontAwesome5Icon color="#babec5" name="globe-asia" />
-                  </View>
-                </View>
-              </View>
-              <View style={styles.content}>
-                <Text>
-                  {data.contentPost}
-                  <Text style={{ color: "#babec5", fontWeight: "600" }}>
-                    ... Xem thêm
-                  </Text>
-                </Text>
-              </View>
-
-              <View>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingHorizontal: 10,
-                    marginBottom: 5,
-                  }}
-                >
-                  <Icon
-                    name="thumbs-up"
-                    color="#318bfb"
-                    // backgroundColor="white"
-                    style={{ marginRight: 5 }}
-                  ></Icon>
-                  <Text style={{ color: "#babec5" }}>{data.numberLike}</Text>
-                  <View style={{ display: "flex", flex: 1 }}>
-                    <Text style={{ color: "#babec5", textAlign: "right" }}>
-                      {data.textComment}
-                    </Text>
-                  </View>
-                </View>
-                <View
-                  style={{
-                    height: 40,
-                    flexDirection: "row",
-                    paddingHorizontal: 10,
-                    borderTopWidth: 1,
-                    borderColor: "#babec5",
-                  }}
-                >
-                  <TouchableOpacity style={styles.btnOption}>
                     <Icon
                       name="thumbs-up"
                       color="#318bfb"
                       // backgroundColor="white"
-                      style={styles.iconBtnOption}
+                      style={{ marginRight: 5 }}
                     ></Icon>
-                    <Text style={{ color: "#318bfb" }}>Thích</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.btnOption, { marginRight: 15 }]}
+                    <Text style={{ color: "#fff" }}>{data.numberLike}</Text>
+                    <View style={{ display: "flex", flex: 1 }}>
+                      <Text style={{ color: "#fff", textAlign: "right" }}>
+                        {data.textComment}
+                      </Text>
+                    </View>
+                  </View>
+                  <View
+                    style={{
+                      height: 40,
+                      flexDirection: "row",
+                      paddingHorizontal: 10,
+                      borderTopWidth: 1,
+                      borderColor: "#babec5",
+                    }}
                   >
-                    <Icon
-                      name="comment-alt"
-                      color="gray"
-                      // backgroundColor="white"
-                      style={styles.iconBtnOption}
-                    ></Icon>
-                    <Text style={{ color: "#babec5" }}>Bình luận</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.btnOption}>
-                    <Icon
-                      name="share"
-                      color="gray"
-                      // backgroundColor="white"
-                      style={styles.iconBtnOption}
-                    ></Icon>
-                    <Text style={{ color: "#babec5" }}>Chia sẻ</Text>
-                  </TouchableOpacity>
+                    <TouchableOpacity style={styles.btnOption}>
+                      {data.isLiked && (
+                        <Icon
+                          name="thumbs-up"
+                          color="#318bfb"
+                          // backgroundColor="white"
+                          style={styles.iconBtnOption}></Icon>
+                      )}
+                      
+                      {!data.isLiked && (
+                        <Icon
+                          name="thumbs-up"
+                          color="#fff"
+                          // backgroundColor="white"
+                          style={styles.iconBtnOption}></Icon>
+                      )}
+                      <Text style={{ color: data.isLiked ? '#318bfb' : "#fff" }}>Thích</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.btnOption, { marginRight: 15 }]}
+                    >
+                      <Icon
+                        name="comment-alt"
+                        color="gray"
+                        // backgroundColor="white"
+                        style={styles.iconBtnOption}
+                      ></Icon>
+                      <Text style={{ color: "#fff" }}>Bình luận</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.btnOption}>
+                      <Icon
+                        name="share"
+                        color="gray"
+                        // backgroundColor="white"
+                        style={styles.iconBtnOption}
+                      ></Icon>
+                      <Text style={{ color: "#fff" }}>Chia sẻ</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
-            </View>
-            {data.numberImage > 1 &&
-              data.lstImage.map((image: string, index: number) => (
-                <ImagePost key={index} urlImage={image} />
-              ))}
-          </ScrollView>
-        )}
-      </Modal>
+            
+            
+          )}
+
+          {data.numberImage != 1 && (
+            <ScrollView style={styles.centeredView}>
+              <View style={{ flex: 1 }}>
+                <View style={styles.author}>
+                  <TouchableOpacity>
+                    <Image
+                      style={styles.avatar}
+                      source={{ uri: data.urlAvatar }}
+                    />
+                  </TouchableOpacity>
+
+                  <View style={{ width: "80%", flexDirection: "column" }}>
+                    <Text
+                      style={{ fontSize: 15, fontWeight: "600", marginBottom: 4 }}
+                    >
+                      {data.authorName}
+                    </Text>
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      <Text
+                        style={{ marginRight: 5, fontSize: 11, color: "#babec5" }}
+                      >
+                        {data.timePost}
+                      </Text>
+                      <FontAwesome5Icon color="#babec5" name="globe-asia" />
+                    </View>
+                  </View>
+                </View>
+                <View style={styles.content}>
+                  <Text>
+                    {contentPost}
+                    {showSeeMore && (
+                      <TouchableOpacity onPress={handleSeeMore}>
+                          <Text style={{ color: "#babec5", fontWeight: "600" }}>
+                          ... Xem thêm
+                        </Text>
+                      </TouchableOpacity>
+                      
+                    )}
+                  </Text>
+                </View>
+
+                <View>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingHorizontal: 10,
+                      marginBottom: 5,
+                    }}
+                  >
+                    <Icon
+                      name="thumbs-up"
+                      color="#318bfb"
+                      // backgroundColor="white"
+                      style={{ marginRight: 5 }}
+                    ></Icon>
+                    <Text style={{ color: "#babec5" }}>{data.numberLike}</Text>
+                    <View style={{ display: "flex", flex: 1 }}>
+                      <Text style={{ color: "#babec5", textAlign: "right" }}>
+                        {data.textComment}
+                      </Text>
+                    </View>
+                  </View>
+                  <View
+                    style={{
+                      height: 40,
+                      flexDirection: "row",
+                      paddingHorizontal: 10,
+                      borderTopWidth: 1,
+                      borderColor: "#babec5",
+                    }}
+                  >
+                    <TouchableOpacity style={styles.btnOption}>
+                      {data.isLiked && (
+                        <Icon
+                          name="thumbs-up"
+                          color="#318bfb"
+                          // backgroundColor="white"
+                          style={styles.iconBtnOption}></Icon>
+                      )}
+                      
+                      {!data.isLiked && (
+                        <Icon
+                          name="thumbs-up"
+                          color="gray"
+                          // backgroundColor="white"
+                          style={styles.iconBtnOption}></Icon>
+                      )}
+                      <Text style={{ color: data.isLiked ? '#318bfb' : "gray" }}>Thích</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.btnOption, { marginRight: 15 }]}
+                    >
+                      <Icon
+                        name="comment-alt"
+                        color="gray"
+                        // backgroundColor="white"
+                        style={styles.iconBtnOption}
+                      ></Icon>
+                      <Text style={{ color: "#babec5" }}>Bình luận</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.btnOption}>
+                      <Icon
+                        name="share"
+                        color="gray"
+                        // backgroundColor="white"
+                        style={styles.iconBtnOption}
+                      ></Icon>
+                      <Text style={{ color: "#babec5" }}>Chia sẻ</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+              {data.numberImage > 1 &&
+                data.urlImage.map((image: string, index: number) => (
+                  <ImagePost key={index} urlImage={image} />
+                ))}
+            </ScrollView>
+          )}
+        </Modal>
+      </GestureRecognizer>
     </SafeAreaView>
   );
 }

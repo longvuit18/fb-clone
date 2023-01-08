@@ -18,10 +18,32 @@ import PostOption from "./PostOption";
 import Comment from "./Comment";
 import ViewPost from "./ViewPost";
 
-function Post({ data}: any) {
+function Post({ data, navigation }: any) {
   const [visibleOption, setVisibleOption] = useState(false);
   const [visibleComment, setVisibleComment] = useState(false);
   const [visibleViewPost, setVisibleViewPost] = useState(false);
+  const [contentPost, setContentPost] = useState(()=>{
+    if(data.contentPost.length > 200){
+      let content = data.contentPost.substr(0, 200);
+      if(content[content.length - 1] != ' '){
+        let index = content.lastIndexOf(" ");
+        content = content.substr(0, index);
+        return content;
+      }
+    }
+    else{
+      return data.contentPost
+    }
+  })
+
+  const [showSeeMore, setShowSeeMore] = useState(()=>{
+    if(data.contentPost.length > 200){
+      return true;
+    }
+    else{
+      return false;
+    }
+  })
 
   const onPress = () => {
     setVisibleOption(true);
@@ -39,24 +61,19 @@ function Post({ data}: any) {
     setVisibleViewPost(false);
   }
 
-  var dataPost = {
-    authorName: 'Trần Hà',
-    urlAvatar: 'https://i.ibb.co/5kDFTz5/avatar4.png',
-    timePost: 'Vừa xong',
-    contentPost:
-      'MÙA BỒ KẾT đã qua được hơn nửa rồi.\nBây giờ bồ kết đã già, cầm lên sẽ nghe tiếng hạt xào xạo ở bên trong, phơi qua một nắng là đã thấy mùi thơm phảng phất dễ chịu',
-    numberImage: 1,
-    hasVideo: false,
-    hasMedia: true,
-    lstImage: [
-      'https://i.ibb.co/27xWkbV/story4.png',
-      'https://i.ibb.co/WsFZXtp/story1.png',
-      'https://i.ibb.co/Q6cF7Cm/story2.png',
-      'https://i.ibb.co/h1CkkfT/story3.png',
-    ],
-    numberLike: '50',
-    textComment: '100 bình luận',
-  };
+  const handleSeeMore = () => {
+    setShowSeeMore(false);
+    setContentPost(data.contentPost);
+  }
+
+  const handleShowComment = () => {
+    navigation.navigate("PostComment", 
+    {
+      id: data.id, 
+      isLike: data.isLiked, 
+      numberLike: data.numberLike
+    });
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -89,10 +106,15 @@ function Post({ data}: any) {
         </View>
         <View style={styles.content}>
           <Text>
-            {data.contentPost}
-            <Text style={{ color: '#babec5', fontWeight: "600" }}>
-              ... Xem thêm
-            </Text>
+            {contentPost}
+            {showSeeMore && (
+              <TouchableOpacity onPress={handleSeeMore}>
+                <Text style={{ color: '#babec5', fontWeight: "600" }}>
+                  ... Xem thêm
+                </Text>
+              </TouchableOpacity>
+            )}
+            
           </Text>
         </View>
         {data.hasMedia && (
@@ -100,7 +122,7 @@ function Post({ data}: any) {
             {data.numberImage == 1 && (
               <View style={styles.oneImage}>
                 <ImageBackground
-                  source={{uri: data.urlImage1}}
+                  source={{uri: data.urlImage[0]}}
                   style={{ width: '100%', height: '100%' }}
                 />
               </View>
@@ -109,14 +131,14 @@ function Post({ data}: any) {
               <View style={styles.twoImage}>
                 <View style={{ width: '50%', marginRight: 5 }}>
                   <Image
-                    source={{uri: data.urlImage1}}
+                    source={{uri: data.urlImage[0]}}
                     style={{ width: '100%', height: '100%' }}
                     resizeMode={'cover'}
                   />
                 </View>
                 <View style={{ width: '50%' }}>
                   <Image
-                    source={{uri: data.urlImage2}}
+                    source={{uri: data.urlImage[1]}}
                     style={{ width: '100%', height: '100%' }}
                     resizeMode={'cover'}
                   />
@@ -127,7 +149,7 @@ function Post({ data}: any) {
               <View style={[styles.twoImage, { overflow: 'hidden' }]}>
                 <View style={{ width: '50%', marginRight: 5 }}>
                   <Image
-                    source={{uri: data.urlImage1}}
+                    source={{uri: data.urlImage[0]}}
                     style={{ width: '100%', height: '100%' }}
                     resizeMode={'cover'}
                   />
@@ -136,14 +158,14 @@ function Post({ data}: any) {
                   <View
                     style={{ width: '100%', height: '50%', marginBottom: 5 }}>
                     <Image
-                      source={{uri: data.urlImage2}}
+                      source={{uri: data.urlImage[1]}}
                       style={{ width: '100%', height: '100%' }}
                       resizeMode={'cover'}
                     />
                   </View>
                   <View style={{ width: '100%', height: '50%' }}>
                     <Image
-                      source={{uri: data.urlImage3}}
+                      source={{uri: data.urlImage[2]}}
                       style={{ width: '100%', height: '100%' }}
                       resizeMode={'cover'}
                     />
@@ -163,14 +185,14 @@ function Post({ data}: any) {
                   <View
                     style={{ width: '50%', height: '100%', marginRight: 5 }}>
                     <Image
-                      source={{uri: data.urlImage1}}
+                      source={{uri: data.urlImage[0]}}
                       style={{ width: '100%', height: '100%' }}
                       resizeMode={'cover'}
                     />
                   </View>
                   <View style={{ width: '50%', height: '100%' }}>
                     <Image
-                      source={{uri: data.urlImage2}}
+                      source={{uri: data.urlImage[1]}}
                       style={{ width: '100%', height: '100%' }}
                       resizeMode={'cover'}
                     />
@@ -185,14 +207,14 @@ function Post({ data}: any) {
                   <View
                     style={{ width: '50%', height: '100%', marginRight: 5 }}>
                     <Image
-                      source={{uri: data.urlImage3}}
+                      source={{uri: data.urlImage[2]}}
                       style={{ width: '100%', height: '100%' }}
                       resizeMode={'cover'}
                     />
                   </View>
                   <View style={{ width: '50%', height: '100%' }}>
                     <Image
-                      source={{uri: data.urlImage4}}
+                      source={{uri: data.urlImage[3]}}
                       style={{ width: '100%', height: '100%' }}
                       resizeMode={'cover'}
                     />
@@ -233,14 +255,24 @@ function Post({ data}: any) {
           </View>
           <View style={{ height: 40, flexDirection: 'row', paddingHorizontal: 10, borderTopWidth: 1, borderColor: '#babec5' }}>
             <TouchableOpacity style={styles.btnOption}>
-              <Icon
-                name="thumbs-up"
-                color="#318bfb"
-                // backgroundColor="white"
-                style={styles.iconBtnOption}></Icon>
-              <Text style={{ color: '#318bfb' }}>Thích</Text>
+              {data.isLiked && (
+                <Icon
+                  name="thumbs-up"
+                  color="#318bfb"
+                  // backgroundColor="white"
+                  style={styles.iconBtnOption}></Icon>
+              )}
+              
+              {!data.isLiked && (
+                <Icon
+                  name="thumbs-up"
+                  color="#babec5"
+                  // backgroundColor="white"
+                  style={styles.iconBtnOption}></Icon>
+              )}
+              <Text style={{ color: data.isLiked ? '#318bfb' : "#babec5" }}>Thích</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.btnOption, {marginRight: 15}]}>
+            <TouchableOpacity style={[styles.btnOption, {marginRight: 15}]} onPress={handleShowComment}>
               <Icon
                 name="comment-alt"
                 color="gray"
@@ -261,8 +293,14 @@ function Post({ data}: any) {
       </View>
 
       <PostOption visible={visibleOption} handleEventShow={onHideOption}/>
-      <Comment visible={visibleComment} handleEventShow={onHideComment}/>
-      <ViewPost visible={visibleViewPost} handleEventShow={onHideViewPost} data={dataPost} />
+      {/* <Comment 
+        id={data.id} 
+        isLike={data.isLiked} 
+        numberLike={data.numberLike} 
+        visible={visibleComment} 
+        handleEventShow={onHideComment}
+      /> */}
+      <ViewPost visible={visibleViewPost} handleEventShow={onHideViewPost} data={data} />
     </SafeAreaView>
   );
 }
@@ -296,7 +334,7 @@ const styles = StyleSheet.create({
   },
   oneImage: {
     flex: 1,
-    backgroundColor: 'red',
+    // backgroundColor: 'red',
   },
   twoImage: {
     flex: 1,

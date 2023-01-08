@@ -18,21 +18,20 @@ import axios from "axios";
 
 
 interface IPost  {
-      authorName?: string;
-      urlAvatar?: string;
-      timePost?: string;
-      contentPost?:
-        string;
-      numberImage?: string;
-      hasVideo?: boolean;
-      hasMedia?: boolean;
-      urlImage1?: string;
-      urlImage2?: string;
-      urlImage3?: string;
-      urlImage4?: string;
-      numberLike?: string;
-      textComment?: string;
-    }
+  id?: string;
+  authorName?: string;
+  urlAvatar?: string;
+  timePost?: string;
+  contentPost?:
+    string;
+  numberImage?: string;
+  hasVideo?: boolean;
+  hasMedia?: boolean;
+  urlImage?: object;
+  numberLike?: object;
+  textComment?: string;
+  isLiked? : boolean,
+}
 function HomeScreen(props: any) {
   const [data, setData] = React.useState<IPost[]>([])
   const getPosts = async () => {
@@ -40,10 +39,30 @@ function HomeScreen(props: any) {
       const posts = await axios.post("/post/get_list_posts?last_id=0&index=0&count=20");
 
       const mapData = posts.data.data.posts.map((post: any) => {
+        let createdDate = new Date(Number.parseInt(post.created));
+        let now = new Date();
+        let timePost = getTimeBetweenTwoDate(createdDate, now);
+        let urlImage: any[] = [];
+        let numberImage = post.image ? post.image.length : 0;
+        if(numberImage > 0){
+          post.image.forEach((image : any)=> {
+            return urlImage.push(image.url)
+          })
+        }
+
         return ({
+          id: post.id,
           authorName: post.author.username,
           urlAvatar: post.author.avatar,
           contentPost: post.described,
+          numberImage: post.image ? post.image.length : 0,
+          timePost: timePost,
+          hasVideo: false,
+          hasMedia: post.image || post.video ? true : false,
+          urlImage: urlImage,
+          numberLike: post.like,
+          textComment: post.comment +  ' bình luận',
+          isLiked: post.is_liked == "1" ? true : false
         }
         )
       })
@@ -58,6 +77,28 @@ function HomeScreen(props: any) {
     
    // console.log(posts);
     
+  }
+
+  const getTimeBetweenTwoDate = (firstDate : Date, secondDate: Date) => {
+    const seconds = (secondDate.getTime() - firstDate.getTime()) / 1000;
+    if(seconds < 60){
+      return "Vừa xong";
+    }
+    else if(seconds < 3600){
+      let minutes = Math.ceil(seconds / 60);
+      return minutes + " phút";
+    }
+    else if(seconds < 86400){
+      let hours = Math.ceil(seconds / 3600);
+      return hours + " giờ";
+    }
+    else if(seconds < 432000){
+      let days = Math.ceil(seconds / 86400);
+      return days + " ngày";
+    }
+    else{
+      return firstDate.getDate() + " thg " + (firstDate.getMonth()+1) + ", " + firstDate.getUTCFullYear()
+    }
   }
 
   React.useEffect(() => {
@@ -106,105 +147,6 @@ function HomeScreen(props: any) {
     },
   ];
 
-  var lstPost = [
-    {
-      authorName: 'Trần Hà',
-      urlAvatar: 'https://i.ibb.co/5kDFTz5/avatar4.png',
-      timePost: 'Vừa xong',
-      contentPost:
-        'MÙA BỒ KẾT đã qua được hơn nửa rồi.\nBây giờ bồ kết đã già, cầm lên sẽ nghe tiếng hạt xào xạo ở bên trong, phơi qua một nắng là đã thấy mùi thơm phảng phất dễ chịu',
-      numberImage: 2,
-      hasVideo: false,
-      hasMedia: true,
-      urlImage1: 'https://i.ibb.co/27xWkbV/story4.png',
-      urlImage2: 'https://i.ibb.co/WsFZXtp/story1.png',
-      urlImage3: '',
-      urlImage4: '',
-      numberLike: '50',
-      textComment: '100 bình luận',
-    },
-    {
-      authorName: 'Trần Hà',
-      urlAvatar: 'https://i.ibb.co/5kDFTz5/avatar4.png',
-      timePost: 'Vừa xong',
-      contentPost:
-        'MÙA BỒ KẾT đã qua được hơn nửa rồi.\nBây giờ bồ kết đã già, cầm lên sẽ nghe tiếng hạt xào xạo ở bên trong, phơi qua một nắng là đã thấy mùi thơm phảng phất dễ chịu',
-      numberImage: 3,
-      hasVideo: false,
-      hasMedia: true,
-      urlImage1: 'https://i.ibb.co/27xWkbV/story4.png',
-      urlImage2: 'https://i.ibb.co/WsFZXtp/story1.png',
-      urlImage3: 'https://i.ibb.co/Q6cF7Cm/story2.png',
-      urlImage4: '',
-      numberLike: '50',
-      textComment: '100 bình luận',
-    },
-    {
-      authorName: 'Trần Hà',
-      urlAvatar: 'https://i.ibb.co/5kDFTz5/avatar4.png',
-      timePost: 'Vừa xong',
-      contentPost:
-        'MÙA BỒ KẾT đã qua được hơn nửa rồi.\nBây giờ bồ kết đã già, cầm lên sẽ nghe tiếng hạt xào xạo ở bên trong, phơi qua một nắng là đã thấy mùi thơm phảng phất dễ chịu',
-      numberImage: 1,
-      hasVideo: false,
-      hasMedia: true,
-      urlImage1: 'https://i.ibb.co/27xWkbV/story4.png',
-      urlImage2: '',
-      urlImage3: '',
-      urlImage4: '',
-      numberLike: '50',
-      textComment: '100 bình luận',
-    },
-    {
-      authorName: 'Trần Hà',
-      urlAvatar: 'https://i.ibb.co/5kDFTz5/avatar4.png',
-      timePost: 'Vừa xong',
-      contentPost:
-        'MÙA BỒ KẾT đã qua được hơn nửa rồi.\nBây giờ bồ kết đã già, cầm lên sẽ nghe tiếng hạt xào xạo ở bên trong, phơi qua một nắng là đã thấy mùi thơm phảng phất dễ chịu',
-      numberImage: 4,
-      hasVideo: false,
-      hasMedia: true,
-      urlImage1: 'https://i.ibb.co/27xWkbV/story4.png',
-      urlImage2: 'https://i.ibb.co/WsFZXtp/story1.png',
-      urlImage3: 'https://i.ibb.co/Q6cF7Cm/story2.png',
-      urlImage4: 'https://i.ibb.co/h1CkkfT/story3.png',
-      numberLike: '50',
-      textComment: '100 bình luận',
-    },
-    {
-      authorName: 'Trần Hà',
-      urlAvatar: 'https://i.ibb.co/5kDFTz5/avatar4.png',
-      timePost: 'Vừa xong',
-      contentPost:
-        'MÙA BỒ KẾT đã qua được hơn nửa rồi.\nBây giờ bồ kết đã già, cầm lên sẽ nghe tiếng hạt xào xạo ở bên trong, phơi qua một nắng là đã thấy mùi thơm phảng phất dễ chịu',
-      numberImage: 0,
-      hasVideo: false,
-      hasMedia: false,
-      urlImage1: '',
-      urlImage2: '',
-      urlImage3: '',
-      urlImage4: '',
-      numberLike: '50',
-      textComment: '100 bình luận',
-    },
-    {
-      authorName: 'Trần Hà',
-      urlAvatar: 'https://i.ibb.co/5kDFTz5/avatar4.png',
-      timePost: 'Vừa xong',
-      contentPost:
-        'MÙA BỒ KẾT đã qua được hơn nửa rồi.\nBây giờ bồ kết đã già, cầm lên sẽ nghe tiếng hạt xào xạo ở bên trong, phơi qua một nắng là đã thấy mùi thơm phảng phất dễ chịu',
-      numberImage: 0,
-      hasVideo: true,
-      hasMedia: true,
-      urlImage1: '',
-      urlImage2: '',
-      urlImage3: '',
-      urlImage4: '',
-      urlVideo: 'https://vjs.zencdn.net/v/oceans.mp4',
-      numberLike: '50',
-      textComment: '100 bình luận',
-    },
-  ];
   
   return (
     <View style={styles.container}>
@@ -238,14 +180,9 @@ function HomeScreen(props: any) {
               style={{ fontSize: 15, textAlign: 'center' }}></Icon>
           </TouchableOpacity>
         </View> 
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            backgroundColor: '#fff',
-            padding: 8,
-          }}>
-          <TouchableOpacity style={styles.avatarContainer}>
+        <View></View>
+        <View style={styles.avatarContainer}>
+          <TouchableOpacity>
             <Image
               resizeMode="cover"
               style={styles.avatar}
@@ -270,7 +207,7 @@ function HomeScreen(props: any) {
         </ScrollView>
 
         {data.map((post, index) => (
-          <Post key={index} data={post}/>
+          <Post key={index} data={post} navigation={props.navigation}/>
         ))}
       </ScrollView>
       
@@ -281,7 +218,6 @@ function HomeScreen(props: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: StatusBar.currentHeight,
   },
   scrollView: {
     flex: 1,
@@ -311,7 +247,12 @@ const styles = StyleSheet.create({
     borderColor: '#1877f2',
     width: 50,
   },
-  avatarContainer: {},
+  avatarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 8,
+  },
   avatar: {
     width: 40,
     height: 40,

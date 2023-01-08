@@ -12,6 +12,7 @@ import { initData, StoreContext } from './store';
 import axios from 'axios';
 import { BASE_URL } from "./constants";
 import UploadPost from './components/UploadPost';
+import PostComment from './components/PostComment';
 
 
 const Tab = createBottomTabNavigator();
@@ -24,6 +25,7 @@ const HomeTab = () => {
     <Stack.Navigator screenOptions={{headerShown: false}}>
       <Stack.Screen name="Home" component={HomeScreen}/>
       <Stack.Screen name="UploadPost" component={UploadPost}/>
+      <Stack.Screen name="PostComment" component={PostComment}/>
     </Stack.Navigator>
   );
 }
