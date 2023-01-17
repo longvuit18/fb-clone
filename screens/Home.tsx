@@ -111,6 +111,11 @@ function HomeScreen(props: any) {
       image: require('../assets/story/story1.png'),
     },
     {
+      avatar: require('../assets/avatar/avatar4.png'),
+      name: 'Nguyễn Ngọc Uyên',
+      image: require('../assets/story/story4.png'),
+    },
+    {
       avatar: require('../assets/avatar/avatar2.png'),
       name: 'Vũ Trang',
       image: require('../assets/story/story2.png'),
@@ -119,11 +124,6 @@ function HomeScreen(props: any) {
       avatar: require('../assets/avatar/avatar3.png'),
       name: 'Minh Quang',
       image: require('../assets/story/story3.png'),
-    },
-    {
-      avatar: require('../assets/avatar/avatar4.png'),
-      name: 'Nguyễn Ngọc Uyên',
-      image: require('../assets/story/story4.png'),
     },
     {
       avatar: require('../assets/avatar/avatar1.png'),
@@ -189,7 +189,7 @@ function HomeScreen(props: any) {
               source={require('../assets/avatar/avatar4.png')}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{ flex: 1 }} onPress={() => props.navigation.navigate("UploadPost")}>
+          <TouchableOpacity style={{ flex: 1 }} onPress={() => props.navigation.navigate("UploadPost", {id: null, mode: 1})}>
             <View style={styles.postBtn}>
               <Text style={styles.text}>Bạn đang nghĩ gì?</Text>
             </View>
