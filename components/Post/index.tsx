@@ -23,26 +23,26 @@ function Post({ data, navigation }: any) {
   const [visibleComment, setVisibleComment] = useState(false);
   const [visibleViewPost, setVisibleViewPost] = useState(false);
   const [contentPost, setContentPost] = useState(()=>{
-    if(data.contentPost.length > 200){
-      let content = data.contentPost.substr(0, 200);
-      if(content[content.length - 1] != ' '){
-        let index = content.lastIndexOf(" ");
-        content = content.substr(0, index);
-        return content;
-      }
-    }
-    else{
+    // if(data.contentPost.length > 200){
+    //   let content = data.contentPost.substr(0, 200);
+    //   if(content[content.length - 1] != ' '){
+    //     let index = content.lastIndexOf(" ");
+    //     content = content.substr(0, index);
+    //     return content;
+    //   }
+    // }
+    // else{
       return data.contentPost
-    }
+    // }
   })
 
   const [showSeeMore, setShowSeeMore] = useState(()=>{
-    if(data.contentPost.length > 200){
-      return true;
-    }
-    else{
+    // if(data.contentPost.length > 200){
+    //   return true;
+    // }
+    // else{
       return false;
-    }
+    // }
   })
 
   const onPress = () => {

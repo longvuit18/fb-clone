@@ -149,7 +149,7 @@ function HomeScreen(props: any) {
 
   
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
@@ -211,7 +211,7 @@ function HomeScreen(props: any) {
         ))}
       </ScrollView>
       
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#cbccd1',
   },
   header: {
-    height: 40,
+    height: 60,
     flexDirection: 'row',
     backgroundColor: '#fff',
     alignItems: 'center',
