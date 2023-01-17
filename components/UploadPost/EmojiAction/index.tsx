@@ -16,6 +16,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import GestureRecognizer from 'react-native-swipe-gestures';
 
 const lstEmoji = [
     [
@@ -73,7 +74,7 @@ const lstActivities = [
     ],
 ]
 
-function EmojiAction({ visible, handleEventShow }: any) {
+function EmojiAction({ visible, handleEventShow, handleChooseEmoji, emoji }: any) {
   const [modalVisible, setModalVisible] = useState(visible);
   const [showSearch, setShowSearch] = useState(true);
   const [tabActive, setTabActive] = useState(0);
@@ -95,137 +96,172 @@ function EmojiAction({ visible, handleEventShow }: any) {
     setModalVisible(visible);
   }, [visible]);
 
+  useEffect(() => {
+    if(emoji != undefined && emoji != ""){
+        for(var i=0; i<lstEmoji.length; i++){
+            if(lstEmoji[i][0].value == emoji){
+                setCurEmoji(lstEmoji[i][0]);
+                break;
+            }
+            if(lstEmoji[i][1].value == emoji){
+                setCurEmoji(lstEmoji[i][1]);
+                break;
+            }
+        }
+        setShowSearch(false);
+    }
+    else{
+        setShowSearch(true);
+    }
+  }, [emoji]);
+
   const handleDeleteCurEmoji = () => {
     setCurEmoji(null);
     setShowSearch(true);
+    handleChooseEmoji("");
+  }
+
+  const handleChooseStatus = (indexX: number, indexY: number) => {
+    var status = lstEmoji[indexX][indexY].value
+    handleChooseEmoji(status);
+    hiddenModal();
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <Modal
-        animationType="none"
-        transparent={true}
-        visible={modalVisible}
+        <GestureRecognizer
+            style={{flex: 1}}
+            onSwipeRight={hiddenModal}
         >
-        <View style={styles.centeredView}>
-            <View style={styles.header}>
-                <TouchableOpacity style={{ marginTop: 2 }} onPress={hiddenModal}>
-                    <Image
-                        source={require("../../../assets/icon/arrow-121-32.png")}
-                        style={{ width: 15, height: 15 }}
-                        resizeMode={"cover"}
-                    />
-                </TouchableOpacity>
-                <Text style={{ marginLeft: 15, fontSize: 16 }}>Bạn cảm thấy thế nào?</Text>
-            </View>
-            <View style={styles.tab}>
-                <TouchableOpacity 
-                    onPress={() => {setTabActive(0)}}
-                    style={[styles.tabOption, tabActive == 0 ? styles.tabOptionActive : {}]}>
-                    <Text style={[{fontWeight: "600"}, tabActive == 0 ? styles.textActive : {}]}>CẢM XÚC</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                    onPress={() => {setTabActive(1)}}
-                    style={[styles.tabOption, tabActive == 1 ? styles.tabOptionActive : {}]}>
-                    <Text style={[{fontWeight: "600"}, tabActive == 1 ? styles.textActive : {}]}>HOẠT ĐỘNG</Text>
-                </TouchableOpacity>
-            </View>
-            <View style={styles.action}>
-                {showSearch && 
-                    <View style={styles.search}>
-                        <Image
-                            source={require("../../../assets/icon/search-3-32.png")}
-                            style={{ width: 20, height: 20 }}
-                            resizeMode={"cover"}
-                        />
-                        <TextInput 
-                            placeholder="Tìm kiếm"
-                            placeholderTextColor="#babec5"
-                            // underlineColor="transparent"
-                            style={styles.textInput}
-                        />
+            <Modal
+                animationType="none"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={hiddenModal}
+            >
+                <View style={styles.centeredView}>
+                    <View style={styles.header}>
+                        <TouchableOpacity style={{ marginTop: 2 }} onPress={hiddenModal}>
+                            <Image
+                                source={require("../../../assets/icon/arrow-121-32.png")}
+                                style={{ width: 15, height: 15 }}
+                                resizeMode={"cover"}
+                            />
+                        </TouchableOpacity>
+                        <Text style={{ marginLeft: 15, fontSize: 16 }}>Bạn cảm thấy thế nào?</Text>
                     </View>
-                }
-                {!showSearch &&
-                    <View style={styles.search}>
-                        <Image
-                            source={curEmoji?.icon}
-                            style={{ width: 20, height: 20 }}
-                            resizeMode={"cover"}
-                        />
-                        <Text style={{marginLeft: 10}}>{curEmoji?.value}</Text>
-                        <View style={{flex: 1}}></View>
-                        <TouchableOpacity onPress={handleDeleteCurEmoji}>
-                            <Text>X</Text>
+                    <View style={styles.tab}>
+                        <TouchableOpacity 
+                            onPress={() => {setTabActive(0)}}
+                            style={[styles.tabOption, tabActive == 0 ? styles.tabOptionActive : {}]}>
+                            <Text style={[{fontWeight: "600"}, tabActive == 0 ? styles.textActive : {}]}>CẢM XÚC</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                            onPress={() => {setTabActive(1)}}
+                            style={[styles.tabOption, tabActive == 1 ? styles.tabOptionActive : {}]}>
+                            <Text style={[{fontWeight: "600"}, tabActive == 1 ? styles.textActive : {}]}>HOẠT ĐỘNG</Text>
                         </TouchableOpacity>
                     </View>
-                }
-            </View>
-            {tabActive == 0 &&
-                <ScrollView style={styles.emoji}>
-                    {lstEmoji.map((emoji, index) => (
-                        <View key={index} style={styles.emojiList}>
-                            <TouchableOpacity style={[styles.emojiItem, 
-                                index == 0 ? {borderTopWidth: 1, 
-                                            borderTopColor: "#babec5",
-                                            } : {},
-                                {borderLeftWidth: 1, borderLeftColor: "#babec5"}]}
-                            >
+                    <View style={styles.action}>
+                        {showSearch && 
+                            <View style={styles.search}>
                                 <Image
-                                    source={emoji[0].icon}
-                                    style={{ width: 30, height: 30 }}
+                                    source={require("../../../assets/icon/search-3-32.png")}
+                                    style={{ width: 20, height: 20 }}
                                     resizeMode={"cover"}
                                 />
-                                <Text style={{marginLeft: 10}}>{emoji[0].value}</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={[styles.emojiItem, 
-                                index == 0 ? {borderTopWidth: 1, borderTopColor: "#babec5"} : {}]}
-                            >
+                                <TextInput 
+                                    placeholder="Tìm kiếm"
+                                    placeholderTextColor="#babec5"
+                                    // underlineColor="transparent"
+                                    style={styles.textInput}
+                                />
+                            </View>
+                        }
+                        {!showSearch &&
+                            <View style={styles.search}>
                                 <Image
-                                    source={emoji[1].icon}
-                                    style={{ width: 30, height: 30 }}
+                                    source={curEmoji?.icon}
+                                    style={{ width: 20, height: 20 }}
                                     resizeMode={"cover"}
                                 />
-                                <Text style={{marginLeft: 10}}>{emoji[1].value}</Text>
-                            </TouchableOpacity>
-                        </View>
-                    ))}
-                </ScrollView>
-            }
-            {tabActive == 1 &&
-                <ScrollView style={styles.emoji}>
-                    {lstActivities.map((emoji, index) => (
-                        <View key={index} style={styles.emojiList}>
-                            <TouchableOpacity style={[styles.emojiItem, 
-                                index == 0 ? {borderTopWidth: 1, 
-                                            borderTopColor: "#babec5",
-                                            } : {},
-                                {borderLeftWidth: 1, borderLeftColor: "#babec5"}]}
-                            >
-                                <Image
-                                    source={emoji[0].icon}
-                                    style={{ width: 30, height: 30 }}
-                                    resizeMode={"cover"}
-                                />
-                                <Text style={{marginLeft: 10}}>{emoji[0].value}</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={[styles.emojiItem, 
-                                index == 0 ? {borderTopWidth: 1, borderTopColor: "#babec5"} : {}]}
-                            >
-                                <Image
-                                    source={emoji[1].icon}
-                                    style={{ width: 30, height: 30 }}
-                                    resizeMode={"cover"}
-                                />
-                                <Text style={{marginLeft: 10}}>{emoji[1].value}</Text>
-                            </TouchableOpacity>
-                        </View>
-                    ))}
-                </ScrollView>
-            }
-        </View>
-            
-      </Modal>
+                                <Text style={{marginLeft: 10}}>{curEmoji?.value}</Text>
+                                <View style={{flex: 1}}></View>
+                                <TouchableOpacity onPress={handleDeleteCurEmoji}>
+                                    <Text>X</Text>
+                                </TouchableOpacity>
+                            </View>
+                        }
+                    </View>
+                    {tabActive == 0 &&
+                        <ScrollView style={styles.emoji}>
+                            {lstEmoji.map((emoji, index) => (
+                                <View key={index} style={styles.emojiList}>
+                                    <TouchableOpacity style={[styles.emojiItem, 
+                                        index == 0 ? {borderTopWidth: 1, 
+                                                    borderTopColor: "#babec5",
+                                                    } : {},
+                                        {borderLeftWidth: 1, borderLeftColor: "#babec5"}]}
+                                        onPress={()=>{handleChooseStatus(index, 0)}}
+                                    >
+                                        <Image
+                                            source={emoji[0].icon}
+                                            style={{ width: 30, height: 30 }}
+                                            resizeMode={"cover"}
+                                        />
+                                        <Text style={{marginLeft: 10}}>{emoji[0].value}</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={[styles.emojiItem, 
+                                        index == 0 ? {borderTopWidth: 1, borderTopColor: "#babec5"} : {}]}
+                                        onPress={()=>{handleChooseStatus(index, 1)}}
+                                    >
+                                        <Image
+                                            source={emoji[1].icon}
+                                            style={{ width: 30, height: 30 }}
+                                            resizeMode={"cover"}
+                                        />
+                                        <Text style={{marginLeft: 10}}>{emoji[1].value}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            ))}
+                        </ScrollView>
+                    }
+                    {tabActive == 1 &&
+                        <ScrollView style={styles.emoji}>
+                            {lstActivities.map((emoji, index) => (
+                                <View key={index} style={styles.emojiList}>
+                                    <TouchableOpacity style={[styles.emojiItem, 
+                                        index == 0 ? {borderTopWidth: 1, 
+                                                    borderTopColor: "#babec5",
+                                                    } : {},
+                                        {borderLeftWidth: 1, borderLeftColor: "#babec5"}]}
+                                    >
+                                        <Image
+                                            source={emoji[0].icon}
+                                            style={{ width: 30, height: 30 }}
+                                            resizeMode={"cover"}
+                                        />
+                                        <Text style={{marginLeft: 10}}>{emoji[0].value}</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={[styles.emojiItem, 
+                                        index == 0 ? {borderTopWidth: 1, borderTopColor: "#babec5"} : {}]}
+                                    >
+                                        <Image
+                                            source={emoji[1].icon}
+                                            style={{ width: 30, height: 30 }}
+                                            resizeMode={"cover"}
+                                        />
+                                        <Text style={{marginLeft: 10}}>{emoji[1].value}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            ))}
+                        </ScrollView>
+                    }
+                </View>
+                    
+            </Modal>
+        </GestureRecognizer>
+        
     </SafeAreaView>
   );
 }

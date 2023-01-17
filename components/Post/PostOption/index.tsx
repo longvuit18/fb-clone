@@ -14,7 +14,7 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-function PostOption({ visible, handleEventShow }: any) {
+function PostOption({ visible, handleEventShow, canEdit, callBackEvent }: any) {
   const [modalVisible, setModalVisible] = useState(visible);
 
   const hiddenModal = () => {
@@ -26,12 +26,23 @@ function PostOption({ visible, handleEventShow }: any) {
     setModalVisible(visible);
   }, [visible]);
 
+  const deletePost = () => {
+    callBackEvent(0);
+    hiddenModal();
+  }
+
+  const editPost = () => {
+    callBackEvent(1);
+    hiddenModal();
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <Modal
         animationType="none"
         transparent={true}
         visible={modalVisible}
+        onRequestClose={hiddenModal}
         >
         <TouchableOpacity style={styles.centeredView} onPress={hiddenModal}></TouchableOpacity>
         <View style={styles.modalView}>
@@ -46,14 +57,18 @@ function PostOption({ visible, handleEventShow }: any) {
               <Text style={{fontSize: 10}}>Thêm vào danh sách các mục đã lưu</Text>
             </View>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.itemOption}>
-            <Icon name="trash" color="#000" style={{fontSize: 20}}></Icon>
-            <Text style={{marginLeft: 10}}>Xoá</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.itemOption}>
-            <Icon name="pen" color="#000" style={{fontSize: 20}}></Icon>
-            <Text style={{marginLeft: 7}}>Chỉnh sửa bài viết</Text>
-          </TouchableOpacity>
+          {canEdit && (
+            <TouchableOpacity style={styles.itemOption} onPress={deletePost}>
+              <Icon name="trash" color="#000" style={{fontSize: 20}}></Icon>
+              <Text style={{marginLeft: 10}}>Xoá</Text>
+            </TouchableOpacity>
+          )}
+          {canEdit && (
+            <TouchableOpacity style={styles.itemOption} onPress={editPost}>
+              <Icon name="pen" color="#000" style={{fontSize: 20}}></Icon>
+              <Text style={{marginLeft: 7}}>Chỉnh sửa bài viết</Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity style={styles.itemOption}>
             <Icon name="link" color="#000" style={{fontSize: 20}}></Icon>
             <Text style={{marginLeft: 7}}>Sao chép liên kết</Text>

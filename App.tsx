@@ -60,7 +60,8 @@ const BottomNavbar = () => {
 
 axios.defaults.baseURL = BASE_URL;
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
-
+axios.defaults.headers.post['Access-Control-Allow-Origin'] = '*';
+axios.defaults.headers.post['Access-Control-Allow-Headers'] = '*';
 export default function App() {
   const [init, setInit] = useState(true);
   const [state, dispatch] = useReducer(reducer, initData);

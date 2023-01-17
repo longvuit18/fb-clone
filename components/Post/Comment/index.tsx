@@ -125,8 +125,6 @@ function Comment({id, isLike, numberLike, visible, handleEventShow }: any) {
     <SafeAreaView style={styles.container}>
       <GestureRecognizer
         style={{flex: 1}}
-        onSwipeUp={hiddenModal}
-        onSwipeDown={hiddenModal}
         onSwipeRight={hiddenModal}
       >
         <Modal

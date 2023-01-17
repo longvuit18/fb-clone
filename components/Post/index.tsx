@@ -17,32 +17,33 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import PostOption from "./PostOption";
 import Comment from "./Comment";
 import ViewPost from "./ViewPost";
+import axios from "axios";
 
-function Post({ data, navigation }: any) {
+function Post({indexPost, data, navigation, callBackEvent }: any) {
   const [visibleOption, setVisibleOption] = useState(false);
   const [visibleComment, setVisibleComment] = useState(false);
   const [visibleViewPost, setVisibleViewPost] = useState(false);
   const [contentPost, setContentPost] = useState(()=>{
-    // if(data.contentPost.length > 200){
-    //   let content = data.contentPost.substr(0, 200);
-    //   if(content[content.length - 1] != ' '){
-    //     let index = content.lastIndexOf(" ");
-    //     content = content.substr(0, index);
-    //     return content;
-    //   }
-    // }
-    // else{
+    if(data.contentPost && data.contentPost && data.contentPost.length > 200){
+      let content = data.contentPost.substr(0, 200);
+      if(content[content.length - 1] != ' '){
+        let index = content.lastIndexOf(" ");
+        content = content.substr(0, index);
+        return content;
+      }
+    }
+    else{
       return data.contentPost
-    // }
+    }
   })
 
   const [showSeeMore, setShowSeeMore] = useState(()=>{
-    // if(data.contentPost.length > 200){
-    //   return true;
-    // }
-    // else{
+    if(data.contentPost && data.contentPost && data.contentPost.length > 200){
+      return true;
+    }
+    else{
       return false;
-    // }
+    }
   })
 
   const onPress = () => {
@@ -75,6 +76,28 @@ function Post({ data, navigation }: any) {
     });
   }
 
+  const handleCallBackOption = (type : number) => {
+    if(type == 0){
+      Alert.alert('Cảnh báo', 'Bài viết sẽ bị xoá vĩnh viễn. Bạn có chắc chắn muốn xoá?', [
+        {
+          text: 'Bỏ qua',
+          style: 'cancel',
+        },
+        {text: 'Tiếp tục', onPress: () => handleDeletePost()},
+      ]);
+    }
+  }
+
+  const handleDeletePost = async () => {
+    await axios.post("/post/delete_post?id=" + data.id)
+    .then(() => {
+      callBackEvent(indexPost);
+    })
+    .catch((err) => {
+      alert("Có lỗi xảy ra. Vui lòng thử lại!")
+    })
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={{ flex: 1 }}>
@@ -90,6 +113,9 @@ function Post({ data, navigation }: any) {
             <Text style={{ fontSize: 15, fontWeight: "600", marginBottom: 4 }}>
               {data.authorName}
             </Text>
+            {data.status && (
+              <Text>Đang cảm thấy <Text style={{fontWeight: "600"}}>{data.status}</Text></Text>
+            )}
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={{ marginRight: 5, fontSize: 11, color: '#babec5' }}>
                 {data.timePost}
@@ -292,7 +318,12 @@ function Post({ data, navigation }: any) {
         </View>
       </View>
 
-      <PostOption visible={visibleOption} handleEventShow={onHideOption}/>
+      <PostOption 
+        visible={visibleOption} 
+        handleEventShow={onHideOption} 
+        canEdit={data.canEdit}
+        callBackEvent={handleCallBackOption}
+      />
       {/* <Comment 
         id={data.id} 
         isLike={data.isLiked} 
