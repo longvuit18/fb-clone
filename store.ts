@@ -37,6 +37,10 @@ export const getData = async (key: string): Promise<string | null> => {
   }
 }
 
+export const clearDataStore = async () => {
+  await AsyncStorage.clear();
+}
+
 export const getDataObject = async (key: string): Promise<any> => {
   try {
     const jsonValue = await AsyncStorage.getItem(key)
@@ -108,6 +112,9 @@ export const reducer = (state: IStore, action: any): IStore => {
         }
       }
       return state;
+    case "LOG_OUT":
+      clearDataStore().then();
+      return initData;
     default:
       return state;
   }
