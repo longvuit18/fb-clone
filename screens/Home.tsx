@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -15,29 +15,37 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import Story from '../components/Story';
 import Post from '../components/Post';
 import axios from "axios";
-
+import { getData, getDataObject, IUser } from '../store';
 
 interface IPost  {
   id?: string;
   authorName?: string;
   urlAvatar?: string;
   timePost?: string;
-  contentPost?:
-    string;
+  contentPost?: string;
   numberImage?: string;
   hasVideo?: boolean;
   hasMedia?: boolean;
   urlImage?: object;
   numberLike?: object;
   textComment?: string;
-  isLiked? : boolean,
+  isLiked? : boolean;
+  status?: string;
+  canEdit? : boolean
 }
 function HomeScreen(props: any) {
   const [data, setData] = React.useState<IPost[]>([])
+  const [user, setUser] = useState<IUser>()
+
   const getPosts = async () => {
+    var userId : any;
+    await getDataObject("user").then(user => {
+      setUser(user);
+      userId = user.id;
+    })
+
     try {
       const posts = await axios.post("/post/get_list_posts?last_id=0&index=0&count=20");
-
       const mapData = posts.data.data.posts.map((post: any) => {
         let createdDate = new Date(Number.parseInt(post.created));
         let now = new Date();
@@ -62,7 +70,9 @@ function HomeScreen(props: any) {
           urlImage: urlImage,
           numberLike: post.like,
           textComment: post.comment +  ' bình luận',
-          isLiked: post.is_liked == "1" ? true : false
+          isLiked: post.is_liked == "1" ? true : false,
+          status: post.state,
+          canEdit: post.author.id == userId ? true : false,
         }
         )
       })
@@ -70,7 +80,6 @@ function HomeScreen(props: any) {
       
 
       setData(mapData);
-      
     } catch (error) {
       throw error;
     }
@@ -101,9 +110,16 @@ function HomeScreen(props: any) {
     }
   }
 
+  const callBackEventPost = (index: number) => {
+    var tempData = data;
+    tempData.splice(index, 1);
+    setData([...tempData]);
+  }
+
   React.useEffect(() => {
     getPosts();
   }, [])
+
   var lstStory = [
     {
       avatar: require('../assets/avatar/avatar1.png'),
@@ -207,7 +223,7 @@ function HomeScreen(props: any) {
         </ScrollView>
 
         {data.map((post, index) => (
-          <Post key={index} data={post} navigation={props.navigation}/>
+          <Post key={index} indexPost={index} data={post} navigation={props.navigation} callBackEvent={callBackEventPost}/>
         ))}
       </ScrollView>
       
@@ -218,6 +234,7 @@ function HomeScreen(props: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: StatusBar.currentHeight,
   },
   scrollView: {
     flex: 1,

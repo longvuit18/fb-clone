@@ -26,14 +26,8 @@ import EmojiAction from "./EmojiAction";
 import GalleryImage from "./GalleryImage"
 import axios from "axios";
 import fetch, { Headers, RequestInit } from "node-fetch";
+import { getData, getDataObject, IUser } from '../../store';
 
-interface IUserInfo {
-  userId? : string,
-  userName? : string,
-  urlAvatar? : string,
-}
-
-const userId = "63bb01635d6413842cdb10d8";
 const MAX_SELECTED_IMAGEs = 4;
 const MAX_SELECTED_VIDEOs = 1;
 const MAX_VIDEO_SIZE = 20000000; //(Bytes)
@@ -53,11 +47,12 @@ function UploadPost({route}: any) {
     urlImage: [] as string[],
   })
 
+  const [token, setToken] = useState<string>();
   const [described, setDescribed] = useState<string>("");
   const [numCurImage, setNumCurImage] = useState(0)
   const [modalNotiVisible, setModalNotiVisible] = useState(false);
   const [modalEmojiVisible, setModalEmojiVisible] = useState(false);
-  const [userInfo, setUserInfo] = useState<IUserInfo>({});
+  const [userInfo, setUserInfo] = useState<IUser>();
   const [galleryImage, setGalleryImage] = useState<MediaLibrary.Asset[]>([])
   const [showGalleryImage, setShowGalleryImage] = useState(false);
   const [lstImageSelected, setLstImageSelected] = useState<number[]>([]);
@@ -69,6 +64,7 @@ function UploadPost({route}: any) {
 
   useEffect(() => {
     getUserInfo();
+    getToken();
   }, [])
 
 
@@ -81,23 +77,21 @@ function UploadPost({route}: any) {
     }
   }, [described, media.numberImage])
 
-  const getUserInfo = async () => {
-    await axios.post("/user/get_user_info?user_id="+userId)
-      .then((userInfo)=>{
-        const user = userInfo.data.data;
-        const info = {
-          userId: userId,
-          userName: user.username,
-          urlAvatar: user.avatar,
-        }
-        
-        setUserInfo(info);
-      })
-      .catch((err)=>{
-      })
+  const getUserInfo = () => {
+    getDataObject("user").then(user => {
+      setUserInfo(user);
+    })
   }
 
-  const getData = async () => {
+  const getToken = () => {
+    getData("token").then(token => {
+      setToken(token as string);
+    }).catch(() => {
+      //Go to login
+    })
+  }
+
+  const getDataPost = async () => {
     if(mode == 2){
       const id = route.params.id;
       await axios.post("/post/get_post?id=" + id)
@@ -247,16 +241,22 @@ function UploadPost({route}: any) {
     }
 
     if(mode == 1){
-      const requestOptions: RequestInit = {
+      var requestOptions: RequestInit = {
         method: "POST",
         headers: new Headers({
-          Accept: 'application/json',
+          'Accept': 'application/json',
           'Content-Type': 'multipart/form-data',
         }),
         body: formData
       };
+
+      if(lstImageSelected.length == 0){
+        delete requestOptions["body"]; 
+        requestOptions["headers"] = new Headers({
+          'Content-Type': 'application/json',
+        })
+      }
       
-      const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzYzQxNzcwOTgxNTJmZjUzYjI2MDgwOCIsImRhdGVMb2dpbiI6IjIwMjMtMDEtMTVUMTU6MTQ6MjQuMjAxWiIsImlhdCI6MTY3Mzc5NTY2NCwiZXhwIjoxNjgzNzk1NjYzfQ.yb9UTj6WJpo42IYqdeTMgjhzGrbbwcI4Fz5mvL_27fs";
       var uri = "";
       if(described && status){
         uri = 'http://184.169.213.180:3000/it4788/post/add_post?token='+token+'&described='+described+'&status='+status;
@@ -321,12 +321,12 @@ function UploadPost({route}: any) {
               <Image
                 resizeMode="cover"
                 style={styles.avatar}
-                source={{uri: userInfo.urlAvatar}}
+                source={{uri: userInfo?.avatar}}
               />
             </TouchableOpacity>
             <TouchableOpacity style={{ flex: 1 }}>
               <View>
-                <Text style={{ fontWeight: "600" }}>{userInfo.userName}</Text>
+                <Text style={{ fontWeight: "600" }}>{userInfo?.name}</Text>
                 {status && (
                   <Text>Đang cảm thấy <Text style={{fontWeight: "600"}}>{status}</Text></Text>
                 )}
@@ -607,6 +607,7 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: "#fff",
     flex: 1,
+    paddingTop: StatusBar.currentHeight,
   },
   header: {
     height: 50,
