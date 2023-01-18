@@ -34,9 +34,12 @@ const MAX_VIDEO_SIZE = 20000000; //(Bytes)
 const MAX_IMAGE_SIZE = 4194000; //(Bytes)
 const acessType = ["jpeg", "jpg", "png"];
 
+interface IQueryString { token: string, described?: string, status?: string }
+interface IQueryStringUpdate { token: string, id: string, described?: string, status?: string, image_del: string}
 
 function UploadPost({route}: any) {
   const mode = route.params.mode;
+  const id = route.params.id;
   let inputRef = useRef<TextInput>(null);
   const [showFooter, setShowFooter] = useState(true);
   const [isFocus, setIsFocus] = useState(false);
@@ -65,6 +68,9 @@ function UploadPost({route}: any) {
   useEffect(() => {
     getUserInfo();
     getToken();
+    if(mode == 2){
+      getDataPost();
+    }
   }, [])
 
 
@@ -92,17 +98,27 @@ function UploadPost({route}: any) {
   }
 
   const getDataPost = async () => {
-    if(mode == 2){
-      const id = route.params.id;
-      await axios.post("/post/get_post?id=" + id)
-      .then((data)=>{
-
-      })
-      .catch((err)=>{
-
-      })
-    }
-
+    await axios.post("/post/get_post?id=" + id)
+    .then((res)=>{
+      const data = res.data.data;
+      setDescribed(data.described);
+      setStatus(data.state);
+      var mediaData = {
+        hasMedia: true,
+        numberImage: (data.image) ? data.image.length : 0,
+        numberVideo: 0,
+        urlImage: (data.image) ? data.image.map((image : any, index: number)=>{return image.url}) : [],
+      }
+      var curImageId = (data.image) ? data.image.map((image : any, index: number)=>{return image.id}) : [];
+      setMedia(mediaData);
+      setNumCurImage(mediaData.numberImage);
+      setLstCurImage(mediaData.urlImage);
+      setLstCurImageId(curImageId);
+    })
+    .catch((err)=>{
+      console.log(err);
+      alert("Có lỗi xảy ra. Vui lòng thử lại!");
+    })
   }
 
   const onPressShowFooter = () => {
@@ -227,6 +243,18 @@ function UploadPost({route}: any) {
 
   const saveData = async () => {
     var formData = new FormData();
+    for(var i=0; i<lstCurImage.length; i++){
+      var item = lstCurImage[i];
+      var type = item.split(".");
+      var t = type[type.length - 1].split("?")[0];
+      var imageReal = {
+        "uri": item,
+        "name": "filename_"+i,
+        "type": "image/"+t
+      }
+      formData.append("image", imageReal);
+    }
+
     for(var i=0; i<lstImageSelected.length; i++){
       var index = lstImageSelected[i];
       var image = galleryImage[index];
@@ -240,49 +268,56 @@ function UploadPost({route}: any) {
       formData.append("image", imageReal);
     }
 
-    if(mode == 1){
-      var requestOptions: RequestInit = {
-        method: "POST",
-        headers: new Headers({
-          'Accept': 'application/json',
-          'Content-Type': 'multipart/form-data',
-        }),
-        body: formData
-      };
+    var requestOptions: RequestInit = {
+      method: "POST",
+      headers: new Headers({
+        'Accept': 'application/json',
+        'Content-Type': 'multipart/form-data',
+      }),
+      body: formData
+    };
 
-      if(lstImageSelected.length == 0){
-        delete requestOptions["body"]; 
-        requestOptions["headers"] = new Headers({
-          'Content-Type': 'application/json',
-        })
-      }
+    if(lstImageSelected.length == 0 && lstCurImage.length == 0){
+      delete requestOptions["body"]; 
+      requestOptions["headers"] = new Headers({
+        'Content-Type': 'application/json',
+      })
+    }
+
+    var uri = "";
+
+    if(mode == 1){
+      uri = "http://184.169.213.180:3000/it4788/post/add_post?";
+      const modal = {} as IQueryString;
+      modal.token = token!;
+      modal.described = (described) ? described : '';
+      modal.status = (status) ? status : '';
+      let queryString = new URLSearchParams({...modal}).toString();
+      uri = uri + queryString;
       
-      var uri = "";
-      if(described && status){
-        uri = 'http://184.169.213.180:3000/it4788/post/add_post?token='+token+'&described='+described+'&status='+status;
-      }
-      else if(described && !status){
-        uri = 'http://184.169.213.180:3000/it4788/post/add_post?token='+token+'&described='+described;
-      }
-      else if(!described && status){
-        uri = 'http://184.169.213.180:3000/it4788/post/add_post?token='+token+'&status='+status;
-      }
-      else{
-        uri = 'http://184.169.213.180:3000/it4788/post/add_post?token='+token;
-      }
-      
-      fetch(uri, requestOptions)
-        .then((response) => response.json())
-        .then((data) => {
-          console.log('Success:', data);
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-        });
     }
     else{
-      
+      uri = "http://184.169.213.180:3000/it4788/post/edit_post?";
+      const modalUpdate = {} as IQueryStringUpdate;
+      modalUpdate.token = token!;
+      modalUpdate.id = id!;
+      modalUpdate.described = (described) ? described : '';
+      modalUpdate.status = (status) ? status : '';
+      modalUpdate.image_del = (lstCurImageIdDelete.length > 0) ? JSON.stringify(lstCurImageIdDelete): '';
+      let queryString = new URLSearchParams({...modalUpdate}).toString();
+      uri = uri + queryString;
+
+      console.log(queryString)
     }
+
+    fetch(uri, requestOptions)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log('Success:', data);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
   }
 
   return (

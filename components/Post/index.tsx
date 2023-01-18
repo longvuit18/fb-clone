@@ -86,6 +86,9 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
         {text: 'Tiếp tục', onPress: () => handleDeletePost()},
       ]);
     }
+    else{
+      navigation.navigate("UploadPost", {id: data.id, mode: 2})
+    }
   }
 
   const handleDeletePost = async () => {
