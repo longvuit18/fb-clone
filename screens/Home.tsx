@@ -113,6 +113,8 @@ function HomeScreen(props: any) {
   const callBackEventPost = (index: number) => {
     var tempData = data;
     tempData.splice(index, 1);
+    //Chả hiểu sao nó lại không ăn render. nên phải xoá hết đi rồi mới vẽ lại
+    setData([]);
     setData([...tempData]);
   }
 
@@ -202,7 +204,7 @@ function HomeScreen(props: any) {
             <Image
               resizeMode="cover"
               style={styles.avatar}
-              source={require('../assets/avatar/avatar4.png')}
+              source={{uri: user?.avatar}}
             />
           </TouchableOpacity>
           <TouchableOpacity style={{ flex: 1 }} onPress={() => props.navigation.navigate("UploadPost", {id: null, mode: 1})}>
