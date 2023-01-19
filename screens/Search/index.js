@@ -3,9 +3,6 @@ import { Text, StyleSheet, View, TouchableOpacity, TextInput, ScrollView, Image 
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 import ExTouchableOpacity from '../../components/ExTouchableOpacity'
 import { STATUSBAR_HEIGHT, SCREEN_WIDTH, searchType } from '../../constants'
-import { connect } from 'react-redux'
-import { FetchHomeHistoriesRequest } from '../../actions/historyActions'
-import { navigation } from '../../rootNavigation'
 export default function index(props) {
   var recentSearchings = [
     {

@@ -5,6 +5,22 @@ import { SCREEN_HEIGHT, STATUSBAR_HEIGHT } from '../../constants'
 import ExTouchableOpacity from '../../components/ExTouchableOpacity'
 
 export default function EditPublicInfo(props) {
+  var userInfo = {
+    cover_url: "https://scontent.fsgn2-2.fna.fbcdn.net/v/t1.6435-9/60214395_2000493243580749_5858994458770538496_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=e3f864&_nc_ohc=jobpkhqKfHkAX_sU80J&_nc_ht=scontent.fsgn2-2.fna&oh=00_AfBczvbUpu4ha4QN4uJzkD7Q7rPNSlc4DuG633m2TM8RSQ&oe=63CFD0B5",
+    avatar_url: "https://scontent.fsgn2-7.fna.fbcdn.net/v/t1.6435-9/41585523_2191322511147619_4326148844468305920_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=174925&_nc_ohc=OkVD7j2cUJMAX9UnJOF&tn=5-cCzEExNYSV7PRA&_nc_ht=scontent.fsgn2-7.fna&oh=00_AfDpMaSiA0Wy_rStYQdrVt6P-QgjoOt6_Zcy1j5p7VE_Og&oe=63CFC9A1",
+    name: "Nguyễn Đức Nguyên",
+    subName: "",
+    introTxt: "",
+    work_at: "HEBELA",
+    live_in: "Hà Nội",
+    from: "Thanh Hoá",
+    relationship: "Hẹn hò",
+    follower: 325,
+    links: {
+        github: "https://github.com/bim81929",
+        repl: ""
+    }
+}
   return (
     <View style={styles.container}>
       <View style={styles.navigationBar}>
@@ -22,7 +38,7 @@ export default function EditPublicInfo(props) {
             </TouchableOpacity>
           </View>
           <TouchableOpacity activeOpacity={0.8}>
-            <Image source={{ uri: "userInfo.avatar_url" }} style={styles.avatar}></Image>
+            <Image source={{ uri: userInfo.avatar_url }} style={styles.avatar}></Image>
           </TouchableOpacity>
         </View>
         <View style={styles.detail}>
@@ -33,7 +49,7 @@ export default function EditPublicInfo(props) {
             </TouchableOpacity>
           </View>
           <TouchableOpacity activeOpacity={0.8}>
-            <Image source={{ uri: "userInfo.cover_url" }} style={styles.cover}></Image>
+            <Image source={{ uri: userInfo.cover_url }} style={styles.cover}></Image>
           </TouchableOpacity>
         </View>
         <View style={styles.detail}>
@@ -44,7 +60,7 @@ export default function EditPublicInfo(props) {
             </TouchableOpacity>
           </View>
           <TouchableOpacity activeOpacity={0.8}>
-            <Text style={styles.introTxt}>{"userInfo.introTxt"}</Text>
+            <Text style={styles.introTxt}>{userInfo.introTxt}</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.detail}>
@@ -58,38 +74,38 @@ export default function EditPublicInfo(props) {
             <View style={styles.introLine}>
               <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="briefcase" />
               <Text style={styles.introLineText}>
-                Work at <Text style={styles.introHightLight}>{"userInfo.work_at"}</Text>
+                Work at <Text style={styles.introHightLight}>{userInfo.work_at}</Text>
               </Text>
             </View>
             <View style={styles.introLine}>
               <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="home" />
               <Text style={styles.introLineText}>
-                Live in <Text style={styles.introHightLight}>{"userInfo.live_in"}</Text>
+                Live in <Text style={styles.introHightLight}>{userInfo.live_in}</Text>
               </Text>
             </View>
             <View style={styles.introLine}>
               <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="map-marker-alt" />
               <Text style={styles.introLineText}>
-                From <Text style={styles.introHightLight}>{"userInfo.from"}</Text>
+                From <Text style={styles.introHightLight}>{userInfo.from}</Text>
               </Text>
             </View>
             <View style={styles.introLine}>
               <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="heart" />
               <Text style={styles.introLineText}>
-                Relationship <Text style={styles.introHightLight}>{"userInfo.relationship"}</Text>
+                Relationship <Text style={styles.introHightLight}>{userInfo.relationship}</Text>
               </Text>
             </View>
             <View style={styles.introLine}>
               <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="rss" />
               <Text style={styles.introLineText}>
-                Followed by <Text style={styles.introHightLight}>{"userInfo.follower"} </Text>followers
+                Followed by <Text style={styles.introHightLight}>{userInfo.follower} </Text>followers
               </Text>
             </View>
             <View style={styles.introLine}>
               <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="github" />
               <TouchableOpacity>
                 <Text style={styles.introLineText}>
-                  {"userInfo.links.github"}
+                  {userInfo.links.github}
                 </Text>
               </TouchableOpacity>
 
@@ -98,7 +114,7 @@ export default function EditPublicInfo(props) {
               <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="link" />
               <TouchableOpacity>
                 <Text style={styles.introLineText}>
-                  {"userInfo.links.repl"}
+                  {userInfo.links.repl}
                 </Text>
               </TouchableOpacity>
 

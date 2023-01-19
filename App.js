@@ -19,7 +19,7 @@ import WatchSearch from './screens/Search/WatchSearch'
 const HelloWorldApp = () => {
   return (
     <View>
-      <ProfileTab/>
+      <EditPublicInfo/>
     </View>
   )
 }

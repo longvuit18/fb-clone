@@ -3,7 +3,6 @@ import { Text, StyleSheet, View, TouchableOpacity, StatusBar, ScrollView } from 
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 import { STATUSBAR_HEIGHT } from '../../constants'
 import ExTouchableOpacity from '../../components/ExTouchableOpacity'
-import { connect } from 'react-redux'
 export default function ProfileXProfileSetting(props) {
     return (
       <View style={styles.container}>

@@ -1,9 +1,11 @@
 import React, { Component } from 'react'
 import { Text, StyleSheet, View, TouchableOpacity, Clipboard } from 'react-native'
-import Toast from 'react-native-root-toast';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 import ExTouchableOpacity from '../../components/ExTouchableOpacity';
 export default function FriendOptions(props) {
+  var friend = {
+    name : "Nguyễn Đức Nguyên"
+  }
     return (
       <View style={styles.container}>
         <View style={styles.backdrop}>
@@ -16,7 +18,7 @@ export default function FriendOptions(props) {
             <View style={styles.postOptionItem}>
               <View style={styles.optionIcon}><FontAwesome5Icon name="bookmark" size={24}></FontAwesome5Icon></View>
               <View>
-                <Text style={styles.postOptionTitle}>View {"friend.name"}'s friends</Text>
+                <Text style={styles.postOptionTitle}>View {friend.name}'s friends</Text>
               </View>
             </View>
           </TouchableOpacity>
@@ -24,7 +26,7 @@ export default function FriendOptions(props) {
             <View style={styles.postOptionItem}>
               <View style={styles.optionIcon}><FontAwesome5Icon name="minus-square" size={24}></FontAwesome5Icon></View>
               <View>
-                <Text style={styles.postOptionTitle}>Send message to {"friend.name"}</Text>
+                <Text style={styles.postOptionTitle}>Send message to {friend.name}</Text>
               </View>
             </View>
           </TouchableOpacity>
@@ -32,7 +34,7 @@ export default function FriendOptions(props) {
             <View style={styles.postOptionItem}>
               <View style={styles.optionIcon}><FontAwesome5Icon name="globe-asia" size={24}></FontAwesome5Icon></View>
               <View>
-                <Text style={styles.postOptionTitle}>Unfollow {"friend.name"}</Text>
+                <Text style={styles.postOptionTitle}>Unfollow {friend.name}</Text>
               </View>
             </View>
           </TouchableOpacity>
@@ -40,7 +42,7 @@ export default function FriendOptions(props) {
             <View style={styles.postOptionItem}>
               <View style={styles.optionIcon}><FontAwesome5Icon name="trash-alt" size={24}></FontAwesome5Icon></View>
               <View>
-                <Text style={styles.postOptionTitle}>Block {"friend.name"}</Text>
+                <Text style={styles.postOptionTitle}>Block {friend.name}</Text>
               </View>
             </View>
           </TouchableOpacity>
@@ -48,7 +50,7 @@ export default function FriendOptions(props) {
             <View style={styles.postOptionItem}>
               <View style={styles.optionIcon}><FontAwesome5Icon name="history" size={24}></FontAwesome5Icon></View>
               <View>
-                <Text style={styles.postOptionTitle}>Remove {"friend.name"} in friends list</Text>
+                <Text style={styles.postOptionTitle}>Remove {friend.name} in friends list</Text>
               </View>
             </View>
           </TouchableOpacity>

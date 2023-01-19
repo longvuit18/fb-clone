@@ -2,7 +2,6 @@ import React, { PureComponent } from 'react'
 import { TouchableOpacity, Text, StyleSheet, View, TextInput, SafeAreaView, Dimensions, Image } from 'react-native'
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 import GroupCategories from '../../components/GroupCategories'
-import { FetchGroupHistoriesRequest } from '../../actions/historyActions'
 import { connect } from 'react-redux'
 import ExTouchableOpacity from '../../components/ExTouchableOpacity'
 

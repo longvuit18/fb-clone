@@ -1,8 +1,6 @@
 import React, { PureComponent } from 'react'
 import { Text, StyleSheet, View, Image, TouchableOpacity, ScrollView } from 'react-native'
-import { connect } from 'react-redux'
 import { SCREEN_WIDTH } from '../../constants'
-// import * as navigation from '../../rootNavigation'
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 
 export default function index(props) {

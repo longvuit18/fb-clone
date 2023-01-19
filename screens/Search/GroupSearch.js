@@ -1,10 +1,8 @@
 import React, { PureComponent, useState } from 'react'
 import { TouchableOpacity, Text, StyleSheet, View, TextInput, SafeAreaView, Dimensions, Image } from 'react-native'
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
-import GroupCategories from '../../components/GroupCategories'
-import { connect } from 'react-redux'
+import { STATUSBAR_HEIGHT, SCREEN_WIDTH, searchType } from '../../constants'
 import ExTouchableOpacity from '../../components/ExTouchableOpacity'
-import { FetchGroupHistoriesRequest } from '../../actions//historyActions'
 
 export default function GroupSearch(props) {
   var groupHistories = [
@@ -80,11 +78,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   searchToolWrapper: {
+    paddingTop: STATUSBAR_HEIGHT,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderBottomWidth: 0.3,
+    height: 50 + STATUSBAR_HEIGHT,
+    borderBottomWidth: 1,
     borderBottomColor: '#ddd'
   },
   btnBack: {
@@ -94,11 +92,11 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   searchInput: {
-    borderRadius: 48,
+    borderRadius: 40,
     backgroundColor: '#ddd',
     width: screenWidth - 60,
-    height: 35,
-    paddingHorizontal: 15
+    height: 40,
+    paddingHorizontal: 20
   },
   historyWrapper: {
     borderBottomWidth: 5,

@@ -1,7 +1,5 @@
 import React, { Component } from 'react'
 import { Text, StyleSheet, View, Image } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
-import * as navigation from '../../rootNavigation'
 import ExTouchableOpacity from '../ExTouchableOpacity'
 
 export default function GroupCategoryItem(props) {

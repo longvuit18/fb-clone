@@ -1,6 +1,5 @@
 import React, { Component, useState } from 'react'
 import { Text, StyleSheet, View, ScrollView } from 'react-native'
-import { connect } from 'react-redux'
 import GroupCategoryItem from './GroupCategoryItem'
 
 export default function index(props) {

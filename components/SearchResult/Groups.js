@@ -1,6 +1,5 @@
 import React, { Component, useState } from 'react'
 import { Text, StyleSheet, View, Image, TouchableOpacity } from 'react-native'
-import { connect } from 'react-redux'
 import ExTouchableOpacity from '../ExTouchableOpacity'
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 import { SCREEN_WIDTH } from '../../constants'
