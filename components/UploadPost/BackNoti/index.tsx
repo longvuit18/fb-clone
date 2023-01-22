@@ -14,7 +14,7 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-function BackNoti({ visible, handleEventShow }: any) {
+function BackNoti({ visible, handleEventShow, navigation, callBackSave }: any) {
   const [modalVisible, setModalVisible] = useState(visible);
 
   const hiddenModal = () => {
@@ -40,14 +40,14 @@ function BackNoti({ visible, handleEventShow }: any) {
         </View>
         <View style={styles.modalView}>
             
-          <TouchableOpacity style={styles.itemOption}>
+          <TouchableOpacity style={styles.itemOption} onPress={callBackSave}>
             <Icon name="bookmark" color="#000" style={{fontSize: 20}}></Icon>
             <View style={{flexDirection: 'column', marginLeft: 10}}>
               <Text>Lưu làm bản nháp</Text>
               <Text style={{fontSize: 10}}>Bạn sẽ nhận được thông báo về bản nháp</Text>
             </View>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.itemOption}>
+          <TouchableOpacity style={styles.itemOption} onPress={() => {navigation.goBack()}}>
             <Icon name="trash" color="#000" style={{fontSize: 20}}></Icon>
             <Text style={{marginLeft: 10}}>Bỏ bài viết</Text>
           </TouchableOpacity>
