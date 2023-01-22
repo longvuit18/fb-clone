@@ -13,7 +13,7 @@ const storeData = async (key: string, value: string) => {
   }
 }
 
-const storeDataObject = async (key: string, value: any) => {
+export const storeDataObject = async (key: string, value: any) => {
   try {
     const jsonValue = JSON.stringify(value)
     await AsyncStorage.setItem(key, jsonValue)
@@ -39,6 +39,16 @@ export const getData = async (key: string): Promise<string | null> => {
 
 export const clearDataStore = async () => {
   await AsyncStorage.clear();
+}
+
+export const removeDataStore = async (key: string) => {
+  try {
+      await AsyncStorage.removeItem(key);
+      return true;
+  }
+  catch(exception) {
+      return false;
+  }
 }
 
 export const getDataObject = async (key: string): Promise<any> => {

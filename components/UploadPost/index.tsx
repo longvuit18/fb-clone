@@ -9,7 +9,9 @@ import {
   ScrollView,
   ImageBackground,
   Modal,
-  TextInput
+  TextInput,
+  BackHandler,
+  Alert
 } from "react-native";
 
 import Icon from "react-native-vector-icons/FontAwesome5";
@@ -26,7 +28,9 @@ import EmojiAction from "./EmojiAction";
 import GalleryImage from "./GalleryImage"
 import axios from "axios";
 import fetch, { Headers, RequestInit } from "node-fetch";
-import { getData, getDataObject, IUser } from '../../store';
+import { getData, getDataObject, IUser, storeDataObject, removeDataStore} from '../../store';
+import LottieView from 'lottie-react-native';
+
 
 const MAX_SELECTED_IMAGEs = 4;
 const MAX_SELECTED_VIDEOs = 1;
@@ -37,7 +41,8 @@ const acessType = ["jpeg", "jpg", "png"];
 interface IQueryString { token: string, described?: string, status?: string }
 interface IQueryStringUpdate { token: string, id: string, described?: string, status?: string, image_del: string}
 
-function UploadPost({route}: any) {
+function UploadPost(props: any) {
+  const { navigation, route } = props;
   const mode = route.params.mode;
   const id = route.params.id;
   let inputRef = useRef<TextInput>(null);
@@ -62,8 +67,17 @@ function UploadPost({route}: any) {
   const [lstCurImage, setLstCurImage] = useState<string[]>([]);
   const [lstCurImageId, setLstCurImageId] = useState<string[]>([]);
   const [lstCurImageIdDelete, setLstCurImageIdDelete] = useState<string[]>([]);
-  const [status, setStatus] = useState<string>();
+  const [status, setStatus] = useState<string>("");
   const [uploadActive, setUploadActive] = useState<boolean>(false);
+  const [loader, setLoader] = useState<boolean>(false);
+  const [oldDescribed, setOldDescribed] = useState<string>("");
+  const [oldStatus, setOldStatus] = useState<string>("");
+  const [oldMedia, setOldMedia] = useState({
+    hasMedia: true,
+    numberImage: 0,
+    numberVideo: 0,
+    urlImage: [] as string[],
+  })
 
   useEffect(() => {
     getUserInfo();
@@ -71,8 +85,10 @@ function UploadPost({route}: any) {
     if(mode == 2){
       getDataPost();
     }
+    else{
+      getCachePost();
+    }
   }, [])
-
 
   useEffect(() => {
     if(described || media.numberImage > 0){
@@ -82,6 +98,20 @@ function UploadPost({route}: any) {
       setUploadActive(false);
     }
   }, [described, media.numberImage])
+
+  useEffect(() => {
+    const backAction = () => {
+      onBack();
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction,
+    );
+
+    return () => backHandler.remove();
+  }, [described, status, media, oldDescribed, oldStatus, oldMedia]);
 
   const getUserInfo = () => {
     getDataObject("user").then(user => {
@@ -98,6 +128,7 @@ function UploadPost({route}: any) {
   }
 
   const getDataPost = async () => {
+    setLoader(true);
     await axios.post("/post/get_post?id=" + id)
     .then((res)=>{
       const data = res.data.data;
@@ -114,11 +145,32 @@ function UploadPost({route}: any) {
       setNumCurImage(mediaData.numberImage);
       setLstCurImage(mediaData.urlImage);
       setLstCurImageId(curImageId);
+
+      setOldDescribed(data.described);
+      setOldStatus(data.state);
+      setOldMedia(mediaData);
     })
     .catch((err)=>{
       console.log(err);
       alert("Có lỗi xảy ra. Vui lòng thử lại!");
     })
+    setLoader(false);
+  }
+
+  const getCachePost = async () => {
+    setLoader(true);
+    await getDataObject("newPost").then(obj => {
+      if(obj){
+        setDescribed(obj.described);
+        setStatus(obj.status);
+        setMedia(obj.media);
+        setLstCurImage(obj.lstCurImage);
+        setNumCurImage(obj.numCurImage);
+        setLstImageSelected(obj.lstImageSelected);
+      }
+    })
+    setLoader(false);
+    removeDataStore("newPost");
   }
 
   const onPressShowFooter = () => {
@@ -135,9 +187,37 @@ function UploadPost({route}: any) {
     setIsFocus(true);
     setShowFooter(false);
   }
+  
+  const checkChangeData = () => {
+    var change = false;
+    if(described != oldDescribed || status != oldStatus ||
+      JSON.stringify(media) != JSON.stringify(oldMedia)){
+        change = true;
+      }
+
+    return change;
+  }
 
   const onBack = () => {
-    setModalNotiVisible(true);
+    if(checkChangeData()){
+      if(mode == 2){
+        Alert.alert('Bỏ thay đổi', 'Nếu bỏ bây giờ thì bạn sẽ mất mọi thay đổi trên bài viết này.', [
+          {
+            text: 'Chỉnh sửa tiếp',
+            onPress: () => console.log('Cancel Pressed'),
+            style: 'cancel',
+          },
+          {text: 'Bỏ', onPress: () => navigation.goBack()},
+        ]);
+      }
+      else{
+        setModalNotiVisible(true);
+      }
+    }
+    else{
+      navigation.goBack();
+    }
+    
   }
 
   const onContinueEdit = () => {
@@ -162,6 +242,19 @@ function UploadPost({route}: any) {
         setGalleryImage(result.assets);
         setShowGalleryImage(true)
       });
+  }
+
+  const onSaveTempPost = async () => {
+    var object = {
+      described: described,
+      status: status,
+      media: media,
+      lstCurImage: lstCurImage,
+      numCurImage: numCurImage,
+      lstImageSelected: lstImageSelected
+    }
+    await storeDataObject("newPost", object);
+    navigation.goBack();
   }
 
   const handleSelectedImage = (lstIndex : [number]) => {
@@ -309,14 +402,19 @@ function UploadPost({route}: any) {
 
       console.log(queryString)
     }
-
+    setLoader(true);
     fetch(uri, requestOptions)
       .then((response) => response.json())
       .then((data) => {
         console.log('Success:', data);
+        setLoader(false);
+        route.params.onGoBack();
+        navigation.goBack();
       })
       .catch((error) => {
         console.error('Error:', error);
+        setLoader(false);
+        alert("Có lỗi xảy ra! Vui lòng thử lại");
       });
   }
 
@@ -618,7 +716,12 @@ function UploadPost({route}: any) {
 
       </View>
 
-      <BackNoti  visible={modalNotiVisible} handleEventShow={onContinueEdit}/>
+      <BackNoti  
+        visible={modalNotiVisible} 
+        handleEventShow={onContinueEdit}
+        callBackSave={onSaveTempPost}
+        navigation={navigation}
+      />
       <EmojiAction  
         visible={modalEmojiVisible} 
         handleEventShow={onHiddenEmoji} 
@@ -633,6 +736,8 @@ function UploadPost({route}: any) {
         lstSelected={lstImageSelected}
         callBackEvent={handleSelectedImage}
       />
+      {loader && <LottieView source={require('../../assets/icon/loader.json')} autoPlay loop />}
+      
     </SafeAreaView>
   );
 }

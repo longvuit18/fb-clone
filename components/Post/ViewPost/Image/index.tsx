@@ -17,10 +17,13 @@ import Icon from "react-native-vector-icons/FontAwesome5";
 import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-function ImagePost({urlImage}: {urlImage: string}) {
+function ImagePost({urlImage, callBackEvent}: any) {
   return (
     <View style={styles.imageContent}>
-      <Image style={styles.image} source={{ uri: urlImage }} />
+      <TouchableOpacity style={styles.image} onPress={callBackEvent}>
+        <Image style={styles.image} source={{ uri: urlImage }} />
+      </TouchableOpacity>
+      
       <View
         style={{
           flexDirection: "row",
