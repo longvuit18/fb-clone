@@ -17,6 +17,8 @@ import { View, Image } from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
 import Setting from './screens/Setting';
 
+import Profile from './screens/ProfileTab';
+import EditPublicInfo from './screens/ProfileTab/EditPublicInfo';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -29,6 +31,15 @@ const HomeTab = () => {
       <Stack.Screen name="NewsFeed" component={HomeScreen} />
       <Stack.Screen name="UploadPost" component={UploadPost} />
       <Stack.Screen name="PostComment" component={PostComment} />
+    </Stack.Navigator>
+  );
+}
+
+const ProfileTab = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Profile" component={Profile} />
+      <Stack.Screen name="EditPublicInfo" component={EditPublicInfo} />
     </Stack.Navigator>
   );
 }
@@ -52,7 +63,7 @@ const BottomNavbar = () => {
         name="Setting" component={Setting} />
       <Tab.Screen
         options={{ tabBarIcon: ({ color, focused }) => (<Icon name='user-circle' size={22} color={focused ? '#318bfb' : '#ddd'}></Icon>) }}
-        name="Profile" component={HomeScreen} />
+        name="Profile" component={ProfileTab} />
     </Tab.Navigator>
   );
 
