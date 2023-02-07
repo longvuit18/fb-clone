@@ -16,6 +16,8 @@ import Login from './screens/Login';
 import { View, Image } from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
 import Setting from './screens/Setting';
+import Register from './screens/Register';
+import Verify from './screens/Verify';
 
 
 const Tab = createBottomTabNavigator();
@@ -56,6 +58,16 @@ const BottomNavbar = () => {
     </Tab.Navigator>
   );
 
+}
+
+const AuthNav = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Login" component={Login} />
+      <Stack.Screen name="Register" component={Register} />
+      <Stack.Screen name="Verify" component={Verify} />
+    </Stack.Navigator>
+  );
 }
 
 axios.defaults.baseURL = BASE_URL;
@@ -100,7 +112,11 @@ export default function App() {
         <ActivityIndicator color='#000' />
       </View>
         :
-        (!state.isLogin ? <Login /> :
+        (!state.isLogin ? (
+          <NavigationContainer>
+            <AuthNav />
+          </NavigationContainer>
+        ) :
           <NavigationContainer>
             <RootStack.Navigator screenOptions={navigationOptions}>
               <RootStack.Screen name={"BottomNavbar"} component={BottomNavbar} />

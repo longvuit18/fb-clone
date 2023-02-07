@@ -3,30 +3,37 @@ import { StyleSheet, Text, View, Image, TextInput, ScrollView, Button, StatusBar
 import axios from "axios";
 import { useStore } from "../store";
 
-const Login = ({navigation}: any) => {
-  const [phoneNumber, setPhoneNumber] = React.useState("");
-  const [password, setPassword] = React.useState("");
+const Verify = ({navigation, route}: any) => {
+  const phoneNumber = route.params.phoneNumber;
+  const [code, setCode] = React.useState(route.params.code);
   const [invalid, setInvalid] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
 
   const {state, dispatch} = useStore();
 
-
-  const handleLogin = async () => {
+  const handleVerify = async () => {
     try {
       setInvalid(false);
       setLoading(true);
-      const res = await axios.post(`/auth/login?phonenumber=${phoneNumber}&password=${password}`)
+      const res = await axios.post(`/auth/check_verify_code?phonenumber=${phoneNumber}&code_verify=${code}`)
       dispatch({type: "LOGIN", payload: res.data?.data})
       setLoading(false);
     } catch (error) {
       setInvalid(true);
       setLoading(false);
     }
-
-
   };
 
+  const getVerifyCode = async () => {
+    try {
+      const res = await axios.post(`/auth/get_verify_code?phonenumber=${phoneNumber}`);
+
+      setCode(res.data.data.verifyCode);
+    } catch (err) {
+
+    }
+    
+  }
   return (
     <ScrollView>
       <StatusBar
@@ -61,32 +68,24 @@ const Login = ({navigation}: any) => {
           </View>
           <View style={styles.textInput}>
             <TextInput
+            value={code}
               style={styles.formInput}
-              placeholder={"Nhập số diện thoại"}
-              onChangeText={inputEmail =>
-                setPhoneNumber(inputEmail)
+              placeholder={"Mã xác thực"}
+              onChangeText={code =>
+                setCode(code)
               }
             />
-            <TextInput
-              style={styles.formInput}
-              placeholder={"Nhập mật khẩu"}
-              secureTextEntry={true}
-              onChangeText={inputPassword =>
-                setPassword(inputPassword)
-              }
-            />
+            
           </View>
           {invalid && <View>
-            <Text style={styles.validate}>Thông tin đăng nhập không đúng</Text>
+            <Text style={styles.validate}>Mã xác thực không đúng</Text>
 
           </View>}
+          
           <Pressable style={styles.loginButton} disabled={loading}
-              onPress={() => handleLogin()}>
-            <Text style={{color: "#fff"}}>{loading ? <ActivityIndicator /> :"Đăng nhập"}</Text>
+              onPress={() => handleVerify()}>
+            <Text style={{color: "#fff"}}>{loading ? <ActivityIndicator /> : "Xác thực"}</Text>
           </Pressable>
-          <Text style={styles.textForgot}>
-            {"Quên mât khẩu"}
-          </Text>
         </View>
         <View style={styles.orTextContainer}>
           <View style={styles.orTextLine} />
@@ -95,10 +94,15 @@ const Login = ({navigation}: any) => {
         </View>
         <View style={styles.signOutButton}>
           <Button
-            onPress={() => navigation.navigate("Register")}
+            onPress={() => getVerifyCode()}
             // style={styles.buttonSignOut}
-            title={"Tạo account"}
+            title={"Lấy lại mã xác thực"}
             color="#07A007"
+          />
+          <Button
+            onPress={() => navigation.goBack()}
+            // style={styles.buttonSignOut}
+            title={"Quay lại"}
           />
         </View>
       </View>
@@ -106,7 +110,7 @@ const Login = ({navigation}: any) => {
   );
 }
 
-export default Login;
+export default Verify;
 
 const styles = StyleSheet.create({
   validate: {

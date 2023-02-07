@@ -2,25 +2,49 @@ import React, { Component } from "react";
 import { StyleSheet, Text, View, Image, TextInput, ScrollView, Button, StatusBar, TouchableOpacity, TouchableHighlight, ActivityIndicator, Pressable } from "react-native";
 import axios from "axios";
 import { useStore } from "../store";
+import Login from "./Login";
 
-const Login = ({navigation}: any) => {
+const Register = ({navigation}: any) => {
   const [phoneNumber, setPhoneNumber] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [repeatPassword, setRepeatPassword] = React.useState("");
   const [invalid, setInvalid] = React.useState(false);
+  const [messageError, setMessageError] = React.useState("Có lỗi xảy ra, vui long thử lại!");
   const [loading, setLoading] = React.useState(false);
 
-  const {state, dispatch} = useStore();
+  // const {state, dispatch} = useStore();
 
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
+    if (repeatPassword !== password) {
+      setInvalid(true);
+      setMessageError("Bạn nhập lại sai mật khẩu!");
+      return;
+    }
     try {
       setInvalid(false);
       setLoading(true);
-      const res = await axios.post(`/auth/login?phonenumber=${phoneNumber}&password=${password}`)
-      dispatch({type: "LOGIN", payload: res.data?.data})
+      setMessageError("Có lỗi xảy ra, vui long thử lại!");
+
+      const res = await axios.post(`/auth/signup?phonenumber=${phoneNumber}&password=${password}`)
       setLoading(false);
-    } catch (error) {
+      const verifyCode = res.data.data.verifyCode;
+      navigation.navigate("Verify", {
+        phoneNumber: phoneNumber, 
+        code: verifyCode,
+      })
+    } catch (error: any) {
       setInvalid(true);
+      switch (error?.response?.data?.code) {
+        case "9996":
+          setMessageError("Số diện thoại đã được đăng ký, vui lòng chọn số khác!");
+          break;
+        case "1004":
+            setMessageError("Số điện thoại sai định dạng!");
+            break;
+        default:
+          break;
+      }
       setLoading(false);
     }
 
@@ -38,7 +62,7 @@ const Login = ({navigation}: any) => {
         <View style={styles.banner}>
           <Image
             style={(false) ? styles.WithoutBanner : styles.bannerImg}
-            source={(false) ? require("../assets/facebookLogo.png") : require("../assets/banner.png")}
+            source={(true) ? require("../assets/facebookLogo.png") : require("../assets/banner.png")}
           />
         </View>
         <View style={styles.content}>
@@ -75,18 +99,23 @@ const Login = ({navigation}: any) => {
                 setPassword(inputPassword)
               }
             />
+            <TextInput
+              style={styles.formInput}
+              placeholder={"Nhập lại mật khẩu"}
+              secureTextEntry={true}
+              onChangeText={inputPassword =>
+                setRepeatPassword(inputPassword)
+              }
+            />
           </View>
           {invalid && <View>
-            <Text style={styles.validate}>Thông tin đăng nhập không đúng</Text>
+            <Text style={styles.validate}>{messageError}</Text>
 
-          </View>}
+          </View>}   
           <Pressable style={styles.loginButton} disabled={loading}
-              onPress={() => handleLogin()}>
-            <Text style={{color: "#fff"}}>{loading ? <ActivityIndicator /> :"Đăng nhập"}</Text>
+              onPress={() => handleRegister()}>
+            <Text style={{color: "#fff"}}>{loading ? <ActivityIndicator /> : "Đăng ký"}</Text>
           </Pressable>
-          <Text style={styles.textForgot}>
-            {"Quên mât khẩu"}
-          </Text>
         </View>
         <View style={styles.orTextContainer}>
           <View style={styles.orTextLine} />
@@ -95,9 +124,9 @@ const Login = ({navigation}: any) => {
         </View>
         <View style={styles.signOutButton}>
           <Button
-            onPress={() => navigation.navigate("Register")}
+            onPress={() => navigation.navigate("Login")}
             // style={styles.buttonSignOut}
-            title={"Tạo account"}
+            title={"Đăng nhập"}
             color="#07A007"
           />
         </View>
@@ -106,7 +135,7 @@ const Login = ({navigation}: any) => {
   );
 }
 
-export default Login;
+export default Register;
 
 const styles = StyleSheet.create({
   validate: {
