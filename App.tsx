@@ -19,6 +19,7 @@ import Setting from './screens/Setting';
 
 import Profile from './screens/ProfileTab';
 import EditPublicInfo from './screens/ProfileTab/EditPublicInfo';
+import Search from './screens/Search'
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -31,6 +32,7 @@ const HomeTab = () => {
       <Stack.Screen name="NewsFeed" component={HomeScreen} />
       <Stack.Screen name="UploadPost" component={UploadPost} />
       <Stack.Screen name="PostComment" component={PostComment} />
+      <Stack.Screen name="Search" component={Search} />
     </Stack.Navigator>
   );
 }

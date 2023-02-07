@@ -1,6 +1,6 @@
 import React, { useEffect, PureComponent, useState } from 'react'
 import { Text, StyleSheet, View, Image, TouchableOpacity, ScrollView } from 'react-native'
-import { SCREEN_WIDTH } from '../../constants'
+import { SCREEN_WIDTH, SCREEN_HEIGHT, STATUSBAR_HEIGHT } from '../../constants'
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 import { getData, getDataObject, IUser, useStore } from '../../store';
 import axios from "axios";
@@ -19,7 +19,6 @@ export default function index(props: any) {
     })
 
     const { state } = useStore();
-    console.log(state)
     useEffect(() => {
         getProfile();
     }, [])
@@ -125,29 +124,6 @@ export default function index(props: any) {
                     </TouchableOpacity>
                 </View>
             </View>
-            <ScrollView
-                // alignItems="center"
-                bounces={false}
-                horizontal={true}
-                showsHorizontalScrollIndicator={false}
-                style={styles.navigationsWrapper}>
-                <TouchableOpacity style={styles.navigation}>
-                    <FontAwesome5Icon style={styles.navigationIcon} color="#000" size={20} name="images" />
-                    <Text style={{ fontSize: 16, fontWeight: "500" }}>Images</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navigation}>
-                    <FontAwesome5Icon style={styles.navigationIcon} color="#000" size={20} name="video" />
-                    <Text style={{ fontSize: 16, fontWeight: "500" }}>Videos</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navigation}>
-                    <FontAwesome5Icon style={styles.navigationIcon} color="#000" size={20} name="calendar-week" />
-                    <Text style={{ fontSize: 16, fontWeight: "500" }}>Life event</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={{ ...styles.navigation, ...styles.lastNavigation }}>
-                    <FontAwesome5Icon style={styles.navigationIcon} color="#000" size={20} name="music" />
-                    <Text style={{ fontSize: 16, fontWeight: "500" }}>Music</Text>
-                </TouchableOpacity>
-            </ScrollView >
         </ScrollView>
     )
 }
@@ -156,6 +132,7 @@ const styles = StyleSheet.create({
 
     },
     infoWrapper: {
+        paddingTop: STATUSBAR_HEIGHT,
         padding: 15,
         backgroundColor: '#fff',
         borderBottomColor: '#ddd',

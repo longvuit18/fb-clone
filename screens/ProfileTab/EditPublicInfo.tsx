@@ -1,20 +1,23 @@
 import React, { Component } from 'react'
 import { Text, StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native'
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
-import { SCREEN_HEIGHT, STATUSBAR_HEIGHT } from '../../constants'
+import { BASE_URL, SCREEN_HEIGHT, STATUSBAR_HEIGHT } from '../../constants'
 // import ExTouchableOpacity from '../../components/ExTouchableOpacity'
 import { useEffect, useState, useRef } from "react";
 import { useNavigation } from '@react-navigation/native';
 import * as Permissions from "expo-permissions";
 import * as MediaLibrary from "expo-media-library";
 import GalleryImage from "../../components/UploadPost/GalleryImage"
+import { getData, getDataObject, IUser, useStore } from '../../store';
 
 const acessType = ["jpeg", "jpg", "png"];
 const MAX_IMAGE_SIZE = 4194000; //(Bytes)
-interface IQueryString { token: string, described?: string, status?: string }
+
+interface IQueryString { token: string, username: string, description: string, address: string, city: string, country: string, link: string }
 
 export default function EditPublicInfo({ route }: any) {
   var userInfo_1 = route.params.user
+
   const navigation = useNavigation();
   const [userInfo, setUserInfo] = useState(userInfo_1);
   const [galleryImage, setGalleryImage] = useState<MediaLibrary.Asset[]>([])
@@ -22,8 +25,7 @@ export default function EditPublicInfo({ route }: any) {
   const [lstImageSelected, setLstImageSelected] = useState<number[]>([]);
 
   const [typeImage, setTypeImage] = useState(0)
-  const [avatarUrl, setAvatarUrl] = useState<string>(userInfo.avatar_url)
-  const [coverUrl, setCoverUrl] = useState<string>(userInfo.cover_url)
+  const { state } = useStore();
 
   const onHiddenGallery = () => {
     setShowGalleryImage(false)
@@ -31,16 +33,14 @@ export default function EditPublicInfo({ route }: any) {
 
   const setValueForImage = (lstImage: any, type_image: number) => {
     if (lstImage.length > 0) {
-      var uriImages = [];
       var image = galleryImage[lstImage[0]];
 
       var user = userInfo;
       if (type_image == 0) {
         user.avatar_url = image.uri;
-        setAvatarUrl(image.uri)
+        console.log(image.uri)
       } else {
         user.cover_url = image.uri;
-        setCoverUrl(image.uri)
       }
 
       setUserInfo({ ...user })
@@ -52,21 +52,16 @@ export default function EditPublicInfo({ route }: any) {
     var lstIndexd = lstIndex.filter(function (item, pos) {
       return lstIndex.indexOf(item) == pos;
     })
-    for (var i = 0; i < lstIndexd.length; i++) {
-      var index = lstIndexd[i];
-      var image = galleryImage[index];
-      var type = image.filename.split(".");
-      var t = type[type.length - 1];
-      if (!acessType.includes(t.toLocaleLowerCase())) {
-        alert("Bạn chỉ được upload ảnh có định dạng jpeg, jpg, png.");
-        checkValidType = false;
-        break;
-      }
-      if ((image.height * image.width * 4) > MAX_IMAGE_SIZE) {
-        alert("Bạn chỉ được upload ảnh có kích thước tối đa là 4MB!");
-        checkValidType = false;
-        break;
-      }
+    var image = galleryImage[lstIndexd[0]];
+    var type = image.filename.split(".");
+    var t = type[type.length - 1];
+    if (!acessType.includes(t.toLocaleLowerCase())) {
+      alert("Bạn chỉ được upload ảnh có định dạng jpeg, jpg, png.");
+      checkValidType = false;
+    }
+    if ((image.height * image.width * 4) > MAX_IMAGE_SIZE) {
+      alert("Bạn chỉ được upload ảnh có kích thước tối đa là 4MB!");
+      checkValidType = false;
     }
     if (checkValidType) {
       setLstImageSelected(lstIndexd);
@@ -80,10 +75,10 @@ export default function EditPublicInfo({ route }: any) {
 
   const saveData = async () => {
     var formData = new FormData();
-    if (avatarUrl !== null) {
-      let temp = avatarUrl.toString();
+    if (userInfo.cover_url !== null) {
+      let temp = userInfo.cover_url.toString();
       var type = temp.split(".");
-      var t = type[type.length - 1].split("?")[0];
+      var t = type[type.length - 1];
 
       var rt = {
         "uri": temp,
@@ -91,56 +86,54 @@ export default function EditPublicInfo({ route }: any) {
         "type": "image/" + t
       }
 
-      formData.append("avatar", rt);
+      formData.append("cover_image", rt as any);
     }
 
+    if (userInfo.avatar_url !== null) {
+      let temp = userInfo.avatar_url.toString();
+      var type = temp.split(".");
+      var t = type[type.length - 1];
 
-    // if (userInfo.cover_url) {
-    //   var cover_image = userInfo.avatar_url as string;
+      var rt = {
+        "uri": temp,
+        "name": "avatar",
+        "type": "image/" + t
+      }
 
-    //   var type = cover_image.split(".");
-    //   var t = type[type.length - 1].split("?")[0];
+      formData.append("avatar", rt as any);
+    }
+  
+    var requestOptions: RequestInit = {
+      method: "POST",
+      headers: new Headers({
+        'Accept': 'application/json',
+        'Content-Type': 'multipart/form-data',
+      }),
+      body: formData
+    };
+    
 
-    //   var rt = {
-    //     "uri": coverUrl,
-    //     "name": "avatar",
-    //     "type": "image/" + t
-    //   }
-    //   formData.append("cover", rt);
-    // }
+    var uri = "http://184.169.213.180:3000/it4788/user/set_user_info?";
+    const modal = {} as IQueryString;
+    modal.token = state.accessToken;
+    modal.username = userInfo.name;
+    modal.description = userInfo.introTxt;
+    modal.address = userInfo.live_in;
+    modal.city = userInfo.from;
+    modal.country = "";
+    modal.link = "";
+    let queryString = new URLSearchParams({ ...modal }).toString();
+    uri = uri + queryString;
 
-
-    // var requestOptions: RequestInit = {
-    //   method: "POST",
-    //   headers: new Headers({
-    //     'Accept': 'application/json',
-    //     'Content-Type': 'multipart/form-data',
-    //   }),
-    //   body: formData
-    // };
-
-    // if (!avatarUrl && !coverUrl) {
-    //   delete requestOptions["body"];
-    //   requestOptions["headers"] = new Headers({
-    //     'Content-Type': 'application/json',
-    //   })
-    // }
-
-    // var uri = "http://184.169.213.180:3000/it4788/post/add_post?";
-    // const modal = {} as IQueryString;
-    // modal.token = token!;
-    // modal.described = (described) ? described : '';
-    // modal.status = (status) ? status : '';
-    // let queryString = new URLSearchParams({ ...modal }).toString();
-    // uri = uri + queryString;
-    // fetch(uri, requestOptions)
-    //   .then((response) => response.json())
-    //   .then((data) => {
-    //     console.log('Success:', data);
-    //   })
-    //   .catch((error) => {
-    //     console.error('Error:', error);
-    //   });
+    console.log(uri)
+    fetch(uri, requestOptions)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log('Success:', data);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
   }
 
 
@@ -151,10 +144,10 @@ export default function EditPublicInfo({ route }: any) {
         return MediaLibrary.getAssetsAsync({ first: 500, mediaType: "photo", createdAfter: lastDate.getTime(), sortBy: 'creationTime' });
       })
       .then((result) => {
-        console.log(result)
         setTypeImage(type_image)
         setGalleryImage(result.assets);
-        setShowGalleryImage(true)
+        setShowGalleryImage(true);
+        setLstImageSelected([])
       });
   }
 
@@ -243,28 +236,10 @@ export default function EditPublicInfo({ route }: any) {
             </View>
           </View>
         </View>
-        <View style={styles.detail}>
-          <View style={styles.detailTitleWrapper}>
-            <Text style={styles.detailTitle}>Hobbies</Text>
-            <TouchableOpacity>
-              <Text style={{ fontSize: 16, color: "#318bfb" }}>Add</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        <View style={{ ...styles.detail }}>
-          <View style={styles.detailTitleWrapper}>
-            <Text style={styles.detailTitle}>HighLight Photos</Text>
-            <TouchableOpacity>
-              <Text style={{ fontSize: 16, color: "#318bfb" }}>Modify</Text>
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity activeOpacity={0.9} style={styles.highlightGallery}>
-          </TouchableOpacity>
-        </View>
         <View style={{ ...styles.detail, ...styles.lastDetail }}>
-          <TouchableOpacity style={styles.btnModifyMore}>
+          <TouchableOpacity style={styles.btnModifyMore} onPress={saveData}>
             {/* <FontAwesome5Icon /> */}
-            <Text style={{ color: '#318bfb', fontSize: 16, fontWeight: '500' }}>Modify introduction informations</Text>
+            <Text style={{ color: '#318bfb', fontSize: 16, fontWeight: '500' }}>Save</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

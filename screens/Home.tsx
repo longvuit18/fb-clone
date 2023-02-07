@@ -190,7 +190,8 @@ function HomeScreen(props: any) {
               width: 30,
               height: 30,
               justifyContent: 'center',
-            }}>
+            }}
+            onPress={() => props.navigation.navigate("Search")}>
             <Icon
               name="search"
               color="#000"

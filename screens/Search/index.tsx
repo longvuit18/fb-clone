@@ -2,8 +2,11 @@ import React, { Component } from 'react'
 import { Text, StyleSheet, View, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native'
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 import ExTouchableOpacity from '../../components/ExTouchableOpacity'
-import { STATUSBAR_HEIGHT, SCREEN_WIDTH, searchType } from '../../constants'
+import { useNavigation } from '@react-navigation/native';
+import { STATUSBAR_HEIGHT, SCREEN_WIDTH, searchType, SCREEN_HEIGHT, BASE_URL } from '../../constants'
+import Posts from '../../components/Post'
 export default function index(props) {
+  const navigation = useNavigation();
   var recentSearchings = [
     {
       type: 0,
@@ -31,14 +34,37 @@ export default function index(props) {
       }
     }
   ]
+  const getRecentSearch = async () => {
+
+  }
   return (
     <View style={styles.container}>
       <View style={styles.searchToolWrapper}>
-        <ExTouchableOpacity style={styles.btnBack}>
+        <ExTouchableOpacity onPress={() => navigation.goBack()} style={styles.btnBack}>
           <FontAwesome5Icon name="arrow-left" size={20} />
         </ExTouchableOpacity>
         <TextInput style={styles.searchInput} placeholder="Search..." placeholderTextColor="#333" />
       </View>
+      <ScrollView
+        bounces={false}
+        horizontal={true}
+        showsHorizontalScrollIndicator={false}
+        style={styles.categories}>
+        <TouchableOpacity
+          style={{ ...styles.btnCategory, backgroundColor: '#318bfb' }}>
+          <Text style={{ fontSize: 14, fontWeight: '500', color: '#fff' }}>POST</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{ ...styles.btnCategory, backgroundColor: '#318bfb' }}>
+          <Text style={{ fontSize: 14, fontWeight: '500', color: '#fff' }}>PEOPLE</Text>
+        </TouchableOpacity>
+      </ScrollView>
+      {/* <ScrollView
+        // ref="_scrollRef"
+        style={{ ...styles.resultWrapper, height: SCREEN_HEIGHT - STATUSBAR_HEIGHT - 50 - 48 }}
+        bounces={false}>
+        <Posts />
+      </ScrollView> */}
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
         <View style={styles.titleWrapper}>
           <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Recent searching</Text>
@@ -78,6 +104,9 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
     borderBottomWidth: 1,
     alignItems: 'center'
+  },
+  resultWrapper: {
+    height: SCREEN_HEIGHT - STATUSBAR_HEIGHT - 50 - 48
   },
   btnBack: {
     height: 40,
@@ -129,5 +158,18 @@ const styles = StyleSheet.create({
     height: 24,
     justifyContent: 'center',
     alignItems: 'center'
-  }
+  },
+  categories: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 5,
+    paddingVertical: 10,
+    borderBottomColor: '#ddd',
+    borderBottomWidth: 1
+  },
+  btnCategory: {
+    backgroundColor: '#ddd',
+    padding: 5,
+    borderRadius: 5,
+    marginHorizontal: 5
+  },
 })
