@@ -1,49 +1,146 @@
-import React, { Component } from 'react'
+import React, { Component, useState } from 'react'
 import { Text, StyleSheet, View, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native'
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 import ExTouchableOpacity from '../../components/ExTouchableOpacity'
 import { useNavigation } from '@react-navigation/native';
 import { STATUSBAR_HEIGHT, SCREEN_WIDTH, searchType, SCREEN_HEIGHT, BASE_URL } from '../../constants'
-import Posts from '../../components/Post'
+import Post from '../../components/Post'
+import axios from 'axios';
+import { getData, getDataObject, IUser, useStore } from '../../store';
+interface IPost {
+  id?: string;
+  authorName?: string;
+  urlAvatar?: string;
+  timePost?: string;
+  contentPost?: string;
+  numberImage?: string;
+  hasVideo?: boolean;
+  hasMedia?: boolean;
+  urlImage?: object;
+  numberLike?: object;
+  textComment?: string;
+  isLiked?: boolean;
+  status?: string;
+  canEdit?: boolean
+}
+interface RSearch {
+  type?: string,
+  id?: string,
+  keyword?: string
+}
 export default function index(props) {
   const navigation = useNavigation();
-  var recentSearchings = [
-    {
-      type: 0,
-      keyword: ""
-    },
-    {
-      type: 1,
-      user: {
-        avatar_url: "https://scontent.fsgn2-7.fna.fbcdn.net/v/t39.30808-6/314965434_2890110954618969_4295270053510347243_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=09cbfe&_nc_ohc=Q_1x_WBiZvcAX_gY8B3&_nc_ht=scontent.fsgn2-7.fna&oh=00_AfCPWJr3uoCRqoi5OecRbpvX6ePTOzYDgJ-lAWszXiNkfA&oe=63ACDB13",
-        name: "Nguyễn Đức Nguyên"
-      }
-    },
-    {
-      type: 2,
-      page: {
-        avatar_url: "https://scontent.fsgn2-7.fna.fbcdn.net/v/t39.30808-6/314965434_2890110954618969_4295270053510347243_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=09cbfe&_nc_ohc=Q_1x_WBiZvcAX_gY8B3&_nc_ht=scontent.fsgn2-7.fna&oh=00_AfCPWJr3uoCRqoi5OecRbpvX6ePTOzYDgJ-lAWszXiNkfA&oe=63ACDB13",
-        name: "Nguyễn Đức Nguyên"
-      }
-    },
-    {
-      type: 3,
-      group: {
-        name: "BIẾT THẾ ĐÉO ĐI LÀM",
-        avatar_url: "https://scontent.fsgn2-4.fna.fbcdn.net/v/t39.30808-6/298583658_183786070731362_6462470391432866728_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=09cbfe&_nc_ohc=Bwqbbmmnjj8AX8ALrLW&_nc_ht=scontent.fsgn2-4.fna&oh=00_AfBonR4jeo_02UgZVwrXeMxcgeim7hVFKAE7TU7NOzW8-g&oe=63ACB07F"
-      }
-    }
-  ]
-  const getRecentSearch = async () => {
+  const [recentSearchings, setRecentSearchings] = useState<RSearch[]>([])
+  const { state } = useStore();
+  const [data, setData] = React.useState<IPost[]>([])
+  const [keyword, setKeyword] = useState<String>("");
+  const [deleteID, setDeleteID] = useState<String>("");
 
+  const deleteRecentSearch = async () => {
+    try {
+      var index = -1;
+      for (var i = 0; i < recentSearchings.length; i += 1) {
+        if (recentSearchings[i].id === deleteID) {
+          index = i;
+          break;
+        }
+      }
+      if (index !== -1) {
+        const recent = await axios.post(`/search/del_saved_search?token=${state.accessToken}&all=0&search_id=${deleteID}`);
+        console.log(recent)
+      }
+    } catch (error) {
+      throw error;
+    }
   }
+  const getRecentSearch = async () => {
+    try {
+      const recent = await axios.post(`/search/get_saved_search?token=${state.accessToken}&index=0&count=5`);
+      console.log(recent)
+    } catch (error) {
+      throw error;
+    }
+    // const mapSearch = recent.data.data;`
+  }
+  const getTimeBetweenTwoDate = (firstDate: Date, secondDate: Date) => {
+    const seconds = (secondDate.getTime() - firstDate.getTime()) / 1000;
+    if (seconds < 60) {
+      return "Vừa xong";
+    }
+    else if (seconds < 3600) {
+      let minutes = Math.ceil(seconds / 60);
+      return minutes + " phút";
+    }
+    else if (seconds < 86400) {
+      let hours = Math.ceil(seconds / 3600);
+      return hours + " giờ";
+    }
+    else if (seconds < 432000) {
+      let days = Math.ceil(seconds / 86400);
+      return days + " ngày";
+    }
+    else {
+      return firstDate.getDate() + " thg " + (firstDate.getMonth() + 1) + ", " + firstDate.getUTCFullYear()
+    }
+  }
+  const callBackEventPost = (index: number) => {
+    var tempData = data;
+    tempData.splice(index, 1);
+    //Chả hiểu sao nó lại không ăn render. nên phải xoá hết đi rồi mới vẽ lại
+    setData([]);
+    setData([...tempData]);
+  }
+  const searchPost = async () => {
+    try {
+      const posts = await axios.post(`/search/search?token=${state.accessToken}&index=0&count=20&keyword=${keyword}`);
+      const mapData = posts.data.data.posts.map((post: any) => {
+        let createdDate = new Date(Number.parseInt(post.created));
+        let now = new Date();
+        let timePost = getTimeBetweenTwoDate(createdDate, now);
+        let urlImage: any[] = [];
+        let numberImage = post.image ? post.image.length : 0;
+        if (numberImage > 0) {
+          post.image.forEach((image: any) => {
+            return urlImage.push(image.url)
+          })
+        }
+
+        return ({
+          id: post.id,
+          authorName: post.author.username,
+          urlAvatar: post.author.avatar,
+          contentPost: post.described,
+          numberImage: post.image ? post.image.length : 0,
+          timePost: timePost,
+          hasVideo: false,
+          hasMedia: post.image || post.video ? true : false,
+          urlImage: urlImage,
+          numberLike: post.like,
+          textComment: post.comment + ' bình luận',
+          isLiked: post.is_liked == "1" ? true : false,
+          status: post.state,
+          canEdit: post.author.id == state.user.id ? true : false,
+        }
+        )
+      })
+
+
+
+      setData(mapData);
+    } catch (error) {
+      throw error;
+    }
+  }
+  React.useEffect(() => {
+    getRecentSearch();
+  }, [])
   return (
     <View style={styles.container}>
       <View style={styles.searchToolWrapper}>
         <ExTouchableOpacity onPress={() => navigation.goBack()} style={styles.btnBack}>
           <FontAwesome5Icon name="arrow-left" size={20} />
         </ExTouchableOpacity>
-        <TextInput style={styles.searchInput} placeholder="Search..." placeholderTextColor="#333" />
+        <TextInput onBlur={searchPost} onChangeText={(keyword) => setKeyword(keyword)} style={styles.searchInput} placeholder="Search..." placeholderTextColor="#333" />
       </View>
       <ScrollView
         bounces={false}
@@ -59,21 +156,18 @@ export default function index(props) {
           <Text style={{ fontSize: 14, fontWeight: '500', color: '#fff' }}>PEOPLE</Text>
         </TouchableOpacity>
       </ScrollView>
-      {/* <ScrollView
+      <ScrollView
         // ref="_scrollRef"
         style={{ ...styles.resultWrapper, height: SCREEN_HEIGHT - STATUSBAR_HEIGHT - 50 - 48 }}
         bounces={false}>
-        <Posts />
-      </ScrollView> */}
-      <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+        {data.map((post, index) => (
+          <Post key={index} indexPost={index} data={post} navigation={props.navigation} callBackEvent={callBackEventPost} />
+        ))}
         <View style={styles.titleWrapper}>
           <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Recent searching</Text>
-          {/* <TouchableOpacity style={styles.btnModify}>
-            <Text>MODIFY</Text>
-          </TouchableOpacity> */}
         </View>
         <View style={styles.recentSearchWrapper}>
-          {recentSearchings.map((searching, index) => (
+          {/* {recentSearchings.map((searching, index) => (
             <ExTouchableOpacity
               key={index}
               style={styles.recentSearchItem}>
@@ -85,7 +179,7 @@ export default function index(props) {
                 {searching.keyword || searching.user?.name || searching.page?.name || searching.group?.name}
               </Text>
             </ExTouchableOpacity>
-          ))}
+          ))} */}
         </View>
       </ScrollView>
     </View>
