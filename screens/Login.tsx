@@ -20,6 +20,7 @@ const Login = ({navigation}: any) => {
       dispatch({type: "LOGIN", payload: res.data?.data})
       setLoading(false);
     } catch (error) {
+      console.log(error)
       setInvalid(true);
       setLoading(false);
     }

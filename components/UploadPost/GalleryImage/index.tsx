@@ -23,7 +23,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 
 const windowWidth = Dimensions.get('window').width;
 
-function GalleryImage({ visible, handleEventShow, data, numberImage, lstSelected, callBackEvent }: any) {
+function GalleryImage({ visible, handleEventShow, data, numberImage, lstSelected, callBackEvent, screen, type_image }: any) {
   const [modalVisible, setModalVisible] = useState(visible);
   const [imageSelected, setImageSelected] = useState<number[]>(lstSelected);
 
@@ -49,8 +49,11 @@ function GalleryImage({ visible, handleEventShow, data, numberImage, lstSelected
       setImageSelected([...tmpArray])
     }
     else{
-      if(imageSelected.length + numberImage >= 4){
+      if(imageSelected.length + numberImage >= 4 && screen === null){
         alert("Bạn chỉ được chọn tối đa 4 ảnh!")
+      }
+      else if (screen !== null && imageSelected.length > 0) {
+        alert("Bạn chỉ được chọn tối đa 1 ảnh!")
       }
       else{
         setImageSelected([...imageSelected, index])
@@ -59,7 +62,7 @@ function GalleryImage({ visible, handleEventShow, data, numberImage, lstSelected
   }
 
   const handleUploadImage = () => {
-    callBackEvent(imageSelected);
+    callBackEvent(imageSelected, type_image);
     hiddenModal();
   }
 

@@ -246,6 +246,7 @@ function HomeScreen(props: any) {
             />
             <View style={{ flex: 1 }}></View>
             <TouchableOpacity
+              onPress={() => props.navigation.navigate("Search")}
               style={{
                 borderRadius: 50,
                 backgroundColor: '#f1f3f4',

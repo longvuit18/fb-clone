@@ -19,6 +19,9 @@ import Setting from './screens/Setting';
 import Register from './screens/Register';
 import Verify from './screens/Verify';
 
+import Profile from './screens/ProfileTab';
+import EditPublicInfo from './screens/ProfileTab/EditPublicInfo';
+import Search from './screens/Search'
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -31,6 +34,16 @@ const HomeTab = () => {
       <Stack.Screen name="NewsFeed" component={HomeScreen} />
       <Stack.Screen name="UploadPost" component={UploadPost} />
       <Stack.Screen name="PostComment" component={PostComment} />
+      <Stack.Screen name="Search" component={Search} />
+    </Stack.Navigator>
+  );
+}
+
+const ProfileTab = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Profile" component={Profile} />
+      <Stack.Screen name="EditPublicInfo" component={EditPublicInfo} />
     </Stack.Navigator>
   );
 }
@@ -54,7 +67,7 @@ const BottomNavbar = () => {
         name="Setting" component={Setting} />
       <Tab.Screen
         options={{ tabBarIcon: ({ color, focused }) => (<Icon name='user-circle' size={22} color={focused ? '#318bfb' : '#ddd'}></Icon>) }}
-        name="Profile" component={HomeScreen} />
+        name="Profile" component={ProfileTab} />
     </Tab.Navigator>
   );
 
