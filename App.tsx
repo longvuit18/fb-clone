@@ -13,7 +13,7 @@ import { BASE_URL } from "./constants";
 import UploadPost from './components/UploadPost';
 import PostComment from './components/PostComment';
 import Login from './screens/Login';
-import { View, Image } from 'react-native';
+import { View, Image, StatusBar } from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
 import Setting from './screens/Setting';
 import Register from './screens/Register';
@@ -117,6 +117,7 @@ export default function App() {
 
   return (
     <StoreContext.Provider value={{ state, dispatch }}>
+      <StatusBar barStyle="light-content"/>
       {init ? <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Image
           style={{ marginBottom: 20 }}
@@ -131,7 +132,7 @@ export default function App() {
           </NavigationContainer>
         ) :
           <NavigationContainer>
-            <RootStack.Navigator screenOptions={navigationOptions}>
+            <RootStack.Navigator screenOptions={{...navigationOptions}}>
               <RootStack.Screen name={"BottomNavbar"} component={BottomNavbar} />
             </RootStack.Navigator>
           </NavigationContainer>

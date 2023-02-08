@@ -20,6 +20,7 @@ import ImageViewer from 'react-native-image-zoom-viewer';
 import Icon from "react-native-vector-icons/FontAwesome5";
 import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { getStatusBarHeight } from "react-native-status-bar-height";
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -155,6 +156,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#babec5",
+    marginTop: getStatusBarHeight()
   },
   btnPost: {
     height: 35,

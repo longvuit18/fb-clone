@@ -38,7 +38,7 @@ export default function EditPublicInfo({ route }: any) {
       var user = userInfo;
       if (type_image == 0) {
         user.avatar_url = image.uri;
-        console.log(image.uri)
+        // console.log(image.uri)
       } else {
         user.cover_url = image.uri;
       }
@@ -74,7 +74,7 @@ export default function EditPublicInfo({ route }: any) {
 
 
   const saveData = async () => {
-    var formData = new FormData();
+    const formData = new FormData();
     if (userInfo.cover_url !== null) {
       let temp = userInfo.cover_url.toString();
       var type = temp.split(".");
@@ -82,7 +82,7 @@ export default function EditPublicInfo({ route }: any) {
 
       var rt = {
         "uri": temp,
-        "name": "avatar",
+        "name": "cover_image",
         "type": "image/" + t
       }
 
@@ -97,7 +97,7 @@ export default function EditPublicInfo({ route }: any) {
       var rt = {
         "uri": temp,
         "name": "avatar",
-        "type": "image/" + t
+        "type": "image/" + t 
       }
 
       formData.append("avatar", rt as any);
@@ -113,7 +113,7 @@ export default function EditPublicInfo({ route }: any) {
     };
     
 
-    var uri = "http://184.169.213.180:3000/it4788/user/set_user_info?";
+    var uri = `${BASE_URL}/user/set_user_info?"`;
     const modal = {} as IQueryString;
     modal.token = state.accessToken;
     modal.username = userInfo.name;
@@ -125,7 +125,7 @@ export default function EditPublicInfo({ route }: any) {
     let queryString = new URLSearchParams({ ...modal }).toString();
     uri = uri + queryString;
 
-    console.log(uri)
+    // console.log(uri)
     fetch(uri, requestOptions)
       .then((response) => response.json())
       .then((data) => {
@@ -162,9 +162,9 @@ export default function EditPublicInfo({ route }: any) {
       <ScrollView bounces={false} style={styles.detailsWrapper}>
         <View style={{ ...styles.detail, paddingTop: 0 }}>
           <View style={styles.detailTitleWrapper}>
-            <Text style={styles.detailTitle}>Avatar</Text>
+            <Text style={styles.detailTitle}>Ảnh đại diện</Text>
             <TouchableOpacity onPress={() => handleEditAvatar(0)}>
-              <Text style={{ fontSize: 16, color: "#318bfb" }}>Modify</Text>
+              <Text style={{ fontSize: 16, color: "#318bfb" }}>Thay đổi</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity activeOpacity={0.8}>
@@ -173,9 +173,9 @@ export default function EditPublicInfo({ route }: any) {
         </View>
         <View style={styles.detail}>
           <View style={styles.detailTitleWrapper}>
-            <Text style={styles.detailTitle}>Cover</Text>
+            <Text style={styles.detailTitle}>Ảnh nền</Text>
             <TouchableOpacity onPress={() => handleEditAvatar(1)}>
-              <Text style={{ fontSize: 16, color: "#318bfb" }}>Modify</Text>
+              <Text style={{ fontSize: 16, color: "#318bfb" }}>Thay đổi</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity activeOpacity={0.8}>
@@ -184,9 +184,9 @@ export default function EditPublicInfo({ route }: any) {
         </View>
         <View style={styles.detail}>
           <View style={styles.detailTitleWrapper}>
-            <Text style={styles.detailTitle}>Introduction</Text>
+            <Text style={styles.detailTitle}>Giới thiệu</Text>
             <TouchableOpacity>
-              <Text style={{ fontSize: 16, color: "#318bfb" }}>Modify</Text>
+              <Text style={{ fontSize: 16, color: "#318bfb" }}>Thai đổi</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity activeOpacity={0.8}>
@@ -237,7 +237,7 @@ export default function EditPublicInfo({ route }: any) {
           </View>
         </View>
         <View style={{ ...styles.detail, ...styles.lastDetail }}>
-          <TouchableOpacity style={styles.btnModifyMore} onPress={saveData}>
+          <TouchableOpacity style={styles.btnModifyMore} onPress={() => saveData()}>
             {/* <FontAwesome5Icon /> */}
             <Text style={{ color: '#318bfb', fontSize: 16, fontWeight: '500' }}>Save</Text>
           </TouchableOpacity>
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     marginVertical: 10
   },
   lastDetail: {
-    marginBottom: 30,
+    marginBottom: 100,
     borderBottomWidth: 0
   },
   btnModifyMore: {
