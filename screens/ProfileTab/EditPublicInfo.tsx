@@ -79,8 +79,9 @@ export default function EditPublicInfo({ route }: any) {
 
 
   const saveData = async () => {
+    const temp = "firebasestorage";
     var formData = new FormData();
-    if (userInfo.cover_url !== null) {
+    if (userInfo.cover_url !== null && !temp.includes(userInfo.cover_url.toLowerCase())) {
       let temp = userInfo.cover_url.toString();
       var type = temp.split(".");
       var t = type[type.length - 1];
@@ -94,19 +95,19 @@ export default function EditPublicInfo({ route }: any) {
       formData.append("cover_image", rt as any);
     }
 
-    if (userInfo.avatar_url !== null) {
-      let temp = userInfo.avatar_url.toString();
-      var type = temp.split(".");
-      var t = type[type.length - 1];
+    // if (userInfo.avatar_url !== null && !temp.includes(userInfo.avatar_url.toLowerCase())) {
+    //   let temp = userInfo.avatar_url.toString();
+    //   var type = temp.split(".");
+    //   var t = type[type.length - 1];
 
-      var rt = {
-        "uri": temp,
-        "name": "avatar",
-        "type": "image/" + t
-      }
+    //   var rt = {
+    //     "uri": temp,
+    //     "name": "avatar",
+    //     "type": "image/" + t
+    //   }
 
-      formData.append("avatar", rt as any);
-    }
+    //   formData.append("avatar", rt as any);
+    // }
 
     var requestOptions: RequestInit = {
       method: "POST",
@@ -118,7 +119,7 @@ export default function EditPublicInfo({ route }: any) {
     };
 
 
-    var uri = "http://184.169.213.180:3000/it4788/user/set_user_info?";
+    var uri = `${BASE_URL}/user/set_user_info?`;
     const modal = {} as IQueryString;
     modal.token = state.accessToken;
     modal.username = nName !== "" ? nName : userInfo.name;
@@ -248,7 +249,6 @@ export default function EditPublicInfo({ route }: any) {
         </View>
         <View style={{ ...styles.detail, ...styles.lastDetail }}>
           <TouchableOpacity style={styles.btnModifyMore} onPress={saveData}>
-            {/* <FontAwesome5Icon /> */}
             <Text style={{ color: '#318bfb', fontSize: 16, fontWeight: '500' }}>Save</Text>
           </TouchableOpacity>
         </View>
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   navigationBar: {
     paddingTop: STATUSBAR_HEIGHT,
     flexDirection: 'row',
-    height: 94,
+    height: 50,
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#ddd'
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   },
   introLine: {
     flexDirection: 'row',
-    height: 40,
+    height: 50,
     alignItems: 'center'
   },
   introIcon: {
@@ -369,6 +369,7 @@ const styles = StyleSheet.create({
     color: '#333',
     alignSelf: 'center',
     marginVertical: 5,
+    marginLeft: 15,
     borderColor: 'red'
   },
 })

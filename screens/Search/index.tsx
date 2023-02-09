@@ -1,6 +1,7 @@
 import React, { Component, useState } from 'react'
 import { Text, StyleSheet, View, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native'
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
+import AntDesign from 'react-native-vector-icons/AntDesign'
 import ExTouchableOpacity from '../../components/ExTouchableOpacity'
 import { useNavigation } from '@react-navigation/native';
 import { STATUSBAR_HEIGHT, SCREEN_WIDTH, searchType, SCREEN_HEIGHT, BASE_URL } from '../../constants'
@@ -24,7 +25,6 @@ interface IPost {
   canEdit?: boolean
 }
 interface RSearch {
-  type?: string,
   id?: string,
   keyword?: string
 }
@@ -33,30 +33,40 @@ export default function index(props) {
   const [recentSearchings, setRecentSearchings] = useState<RSearch[]>([])
   const { state } = useStore();
   const [data, setData] = React.useState<IPost[]>([])
-  const [keyword, setKeyword] = useState<String>("");
-  const [deleteID, setDeleteID] = useState<String>("");
+  const [keyword, setKeyword] = useState<string>("");
+  const [deleteID, setDeleteID] = useState<string>("");
 
   const deleteRecentSearch = async () => {
+    console.log(deleteID);
     try {
-      var index = -1;
-      for (var i = 0; i < recentSearchings.length; i += 1) {
-        if (recentSearchings[i].id === deleteID) {
-          index = i;
-          break;
-        }
-      }
-      if (index !== -1) {
-        const recent = await axios.post(`/search/del_saved_search?token=${state.accessToken}&all=0&search_id=${deleteID}`);
-        console.log(recent)
-      }
+      var requestOptions: RequestInit = {
+        method: "POST",
+        headers: new Headers({
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        }),
+      };
+      const res = await axios.post(`/search/del_saved_search?search_id=${deleteID}&all=0`)
     } catch (error) {
       throw error;
     }
   }
+  const deleteFunc = (id: string) => {
+    setDeleteID(id);
+    deleteRecentSearch();
+  }
   const getRecentSearch = async () => {
     try {
-      const recent = await axios.post(`/search/get_saved_search?token=${state.accessToken}&index=0&count=5`);
-      console.log(recent)
+      const recent = await axios.post(`/search/get_saved_search?index=0&count=10`);
+      const mapData = recent.data.data.map((keyword: any) => {
+
+        return ({
+          id: keyword.id,
+          keyword: keyword.keyword
+        })
+      })
+      setRecentSearchings([]);
+      setRecentSearchings(mapData);
     } catch (error) {
       throw error;
     }
@@ -92,7 +102,9 @@ export default function index(props) {
   }
   const searchPost = async () => {
     try {
-      const posts = await axios.post(`/search/search?token=${state.accessToken}&index=0&count=20&keyword=${keyword}`);
+      var uri = "/search/search?index=0&count=20&keyword=" + keyword.toString();
+      console.log(uri)
+      const posts = await axios.post(uri);
       const mapData = posts.data.data.posts.map((post: any) => {
         let createdDate = new Date(Number.parseInt(post.created));
         let now = new Date();
@@ -123,9 +135,6 @@ export default function index(props) {
         }
         )
       })
-
-
-
       setData(mapData);
     } catch (error) {
       throw error;
@@ -151,35 +160,33 @@ export default function index(props) {
           style={{ ...styles.btnCategory, backgroundColor: '#318bfb' }}>
           <Text style={{ fontSize: 14, fontWeight: '500', color: '#fff' }}>POST</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={{ ...styles.btnCategory, backgroundColor: '#318bfb' }}>
-          <Text style={{ fontSize: 14, fontWeight: '500', color: '#fff' }}>PEOPLE</Text>
-        </TouchableOpacity>
       </ScrollView>
       <ScrollView
         // ref="_scrollRef"
         style={{ ...styles.resultWrapper, height: SCREEN_HEIGHT - STATUSBAR_HEIGHT - 50 - 48 }}
         bounces={false}>
         {data.map((post, index) => (
-          <Post key={index} indexPost={index} data={post} navigation={props.navigation} callBackEvent={callBackEventPost} />
+          <TouchableOpacity>
+            {data.length !== 0
+            ? (<Post key={index} indexPost={index} data={post} navigation={props.navigation} callBackEvent={callBackEventPost} />)
+          : (<View><Text>Không có bài viết</Text></View>)}
+          </TouchableOpacity>
         ))}
         <View style={styles.titleWrapper}>
-          <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Recent searching</Text>
+          <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Từ khoá đã tìm kiếm</Text>
         </View>
         <View style={styles.recentSearchWrapper}>
-          {/* {recentSearchings.map((searching, index) => (
-            <ExTouchableOpacity
+          {recentSearchings.map((searching, index) => (
+            <TouchableOpacity
               key={index}
-              style={styles.recentSearchItem}>
-              {searching.type === searchType.KEYWORD
-                ? (<View style={styles.searchIconWrapper}><FontAwesome5Icon name="search" size={14} color="gray" /></View>)
-                : <Image style={styles.avatar} source={{ uri: searching.user?.avatar_url || searching.page?.avatar_url || searching.group?.avatar_url }} />
-              }
-              <Text style={{ fontSize: 16, marginLeft: 10 }}>
-                {searching.keyword || searching.user?.name || searching.page?.name || searching.group?.name}
-              </Text>
-            </ExTouchableOpacity>
-          ))} */}
+              style={styles.recentSearchItem}
+              onPress={() => setKeyword(searching.keyword)}>
+              <Text style={{ fontSize: 16, marginLeft: 10 }}>{searching.keyword}</Text>
+              <View style={{ flex: 1 }}></View>
+              <AntDesign name="close" style={styles.btnClose} size={25} onPress={() => deleteFunc(searching.id)}/>
+            </TouchableOpacity>
+            
+          ))}
         </View>
       </ScrollView>
     </View>
@@ -189,7 +196,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
     borderBottomColor: '#ddd',
-    borderBottomWidth: 1
+    borderBottomWidth: 1,
   },
   searchToolWrapper: {
     paddingTop: STATUSBAR_HEIGHT,
@@ -266,4 +273,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginHorizontal: 5
   },
+  btnClose: {
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    paddingHorizontal: 5,
+  }
 })
