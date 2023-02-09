@@ -14,8 +14,8 @@ export default function index(props: any) {
         introTxt: "",
         live_in: "",
         from: "",
-        relationship: "",
         follower: "",
+        country: ""
     })
 
     const { state } = useStore();
@@ -34,8 +34,8 @@ export default function index(props: any) {
                 introTxt: mapUser?.description ?? "",
                 live_in: mapUser?.address ?? "",
                 from: mapUser?.city ?? "",
-                relationship: "",
                 follower: mapUser?.listing ?? "",
+                country: mapUser?.country ?? "",
             })
 
             setUser(mapData);
@@ -93,9 +93,9 @@ export default function index(props: any) {
                         </Text>
                     </View>
                     <View style={styles.introLine}>
-                        <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="heart" />
+                        <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="globe" />
                         <Text style={styles.introLineText}>
-                            Relationship <Text style={styles.introHightLight}>{user.relationship}</Text>
+                            Country <Text style={styles.introHightLight}>{user.country}</Text>
                         </Text>
                     </View>
                     <View style={styles.introLine}>

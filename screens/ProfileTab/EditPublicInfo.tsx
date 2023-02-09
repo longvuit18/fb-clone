@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Text, StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native'
+import { Text, StyleSheet, View, ScrollView, TouchableOpacity, Image, TextInput } from 'react-native'
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 import { BASE_URL, SCREEN_HEIGHT, STATUSBAR_HEIGHT } from '../../constants'
 // import ExTouchableOpacity from '../../components/ExTouchableOpacity'
@@ -26,7 +26,12 @@ export default function EditPublicInfo({ route }: any) {
 
   const [typeImage, setTypeImage] = useState(0)
   const { state } = useStore();
-
+  const [descrip, setDescrip] = useState<string>("");
+  const [nName, setNName] = useState<string>("");
+  const [address, setAddres] = useState<string>("");
+  const [city, setCity] = useState<string>("");
+  const [country, setCountry] = useState<string>("");
+  
   const onHiddenGallery = () => {
     setShowGalleryImage(false)
   }
@@ -102,7 +107,7 @@ export default function EditPublicInfo({ route }: any) {
 
       formData.append("avatar", rt as any);
     }
-  
+
     var requestOptions: RequestInit = {
       method: "POST",
       headers: new Headers({
@@ -111,16 +116,16 @@ export default function EditPublicInfo({ route }: any) {
       }),
       body: formData
     };
-    
+
 
     var uri = "http://184.169.213.180:3000/it4788/user/set_user_info?";
     const modal = {} as IQueryString;
     modal.token = state.accessToken;
-    modal.username = userInfo.name;
-    modal.description = userInfo.introTxt;
-    modal.address = userInfo.live_in;
-    modal.city = userInfo.from;
-    modal.country = "";
+    modal.username = nName !== "" ? nName : userInfo.name;
+    modal.description = descrip !== "" ? descrip : userInfo.introTxt;
+    modal.address = address !== "" ? address : userInfo.live_in;
+    modal.city = city !== "" ? city : userInfo.from;
+    modal.country = country !== "" ? country : "";
     modal.link = "";
     let queryString = new URLSearchParams({ ...modal }).toString();
     uri = uri + queryString;
@@ -157,14 +162,14 @@ export default function EditPublicInfo({ route }: any) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.btnBack}>
           <FontAwesome5Icon name="arrow-left" color="#000" size={20} />
         </TouchableOpacity>
-        <Text style={styles.navigationTitle}>Edit your profile</Text>
+        <Text style={styles.navigationTitle}>Chỉnh sửa trang cá nhân</Text>
       </View>
       <ScrollView bounces={false} style={styles.detailsWrapper}>
         <View style={{ ...styles.detail, paddingTop: 0 }}>
           <View style={styles.detailTitleWrapper}>
-            <Text style={styles.detailTitle}>Avatar</Text>
+            <Text style={styles.detailTitle}>Ảnh đại diện</Text>
             <TouchableOpacity onPress={() => handleEditAvatar(0)}>
-              <Text style={{ fontSize: 16, color: "#318bfb" }}>Modify</Text>
+              <Text style={{ fontSize: 16, color: "#318bfb" }}>Thay đổi</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity activeOpacity={0.8}>
@@ -173,9 +178,9 @@ export default function EditPublicInfo({ route }: any) {
         </View>
         <View style={styles.detail}>
           <View style={styles.detailTitleWrapper}>
-            <Text style={styles.detailTitle}>Cover</Text>
+            <Text style={styles.detailTitle}>Ảnh bìa</Text>
             <TouchableOpacity onPress={() => handleEditAvatar(1)}>
-              <Text style={{ fontSize: 16, color: "#318bfb" }}>Modify</Text>
+              <Text style={{ fontSize: 16, color: "#318bfb" }}>Thay đổi</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity activeOpacity={0.8}>
@@ -184,55 +189,60 @@ export default function EditPublicInfo({ route }: any) {
         </View>
         <View style={styles.detail}>
           <View style={styles.detailTitleWrapper}>
-            <Text style={styles.detailTitle}>Introduction</Text>
-            <TouchableOpacity>
-              <Text style={{ fontSize: 16, color: "#318bfb" }}>Modify</Text>
-            </TouchableOpacity>
+            <Text style={styles.detailTitle}>Tiểu sử</Text>
           </View>
-          <TouchableOpacity activeOpacity={0.8}>
-            <Text style={styles.introTxt}>{userInfo.introTxt}</Text>
-          </TouchableOpacity>
+          <TextInput 
+                placeholder={userInfo.introTxt}
+                placeholderTextColor="#000000"
+                onChangeText={newText => setDescrip(newText)}
+                style={styles.textInput}
+                />
         </View>
         <View style={styles.detail}>
           <View style={styles.detailTitleWrapper}>
-            <Text style={styles.detailTitle}>Details</Text>
-            <TouchableOpacity>
-              <Text style={{ fontSize: 16, color: "#318bfb" }}>Modify</Text>
-            </TouchableOpacity>
+            <Text style={styles.detailTitle}>Chi tiết</Text>
           </View>
           <View style={styles.introListWrapper}>
+          <View style={styles.introLine}>
+              <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="user" />
+              <Text style={styles.introLineText}>Họ tên</Text>
+              <TextInput 
+                placeholder={userInfo.name}
+                placeholderTextColor="#000000"
+                onChangeText={newText => setNName(newText)}
+                style={styles.textInput}
+                />
+            </View>
             <View style={styles.introLine}>
               <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="home" />
-              <Text style={styles.introLineText}>
-                Live in <Text style={styles.introHightLight}>{userInfo.live_in}</Text>
-              </Text>
+              <Text style={styles.introLineText}>Địa chỉ</Text>
+              <TextInput 
+                placeholder={userInfo.live_in}
+                placeholderTextColor="#000000"
+                onChangeText={newText => setAddres(newText)}
+                style={styles.textInput}
+                />
             </View>
+            
             <View style={styles.introLine}>
               <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="map-marker-alt" />
-              <Text style={styles.introLineText}>
-                From <Text style={styles.introHightLight}>{userInfo.from}</Text>
-              </Text>
+              <Text style={styles.introLineText}>Thành Phố</Text>
+              <TextInput 
+                placeholder={userInfo.from}
+                placeholderTextColor="#000000"
+                onChangeText={newText => setCity(newText)}
+                style={styles.textInput}
+                />
             </View>
             <View style={styles.introLine}>
-              <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="heart" />
-              <Text style={styles.introLineText}>
-                Relationship <Text style={styles.introHightLight}>{userInfo.relationship}</Text>
-              </Text>
-            </View>
-            <View style={styles.introLine}>
-              <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="rss" />
-              <Text style={styles.introLineText}>
-                Followed by <Text style={styles.introHightLight}>{userInfo.follower} </Text>followers
-              </Text>
-            </View>
-            <View style={styles.introLine}>
-              <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="ellipsis-h" />
-              <TouchableOpacity>
-                <Text style={styles.introLineText}>
-                  View more introductory information
-                </Text>
-              </TouchableOpacity>
-
+              <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="globe" />
+              <Text style={styles.introLineText}>Quốc gia</Text>
+              <TextInput 
+                placeholder={userInfo.country}
+                placeholderTextColor="#000000"
+                onChangeText={newText => setCountry(newText)}
+                style={styles.textInput}
+                />
             </View>
           </View>
         </View>
@@ -346,5 +356,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     borderRadius: 5
-  }
+  },
+  textInput: {
+    backgroundColor: "#ffffff",
+    borderRadius: 25,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    flex: 1,
+    height: 45,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    color: '#333',
+    alignSelf: 'center',
+    marginVertical: 5,
+    borderColor: 'red'
+  },
 })
