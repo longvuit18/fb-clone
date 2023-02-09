@@ -10,6 +10,8 @@ import {
   Text,
   TouchableOpacity,
   Alert,
+  RefreshControl,
+  ActivityIndicator, 
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import Story from '../components/Story';
@@ -18,7 +20,7 @@ import axios from "axios";
 import { getData, getDataObject, IUser } from '../store';
 
 interface IPost  {
-  id?: string;
+  id: string;
   authorName?: string;
   urlAvatar?: string;
   timePost?: string;
@@ -36,16 +38,28 @@ interface IPost  {
 function HomeScreen(props: any) {
   const [data, setData] = React.useState<IPost[]>([])
   const [user, setUser] = useState<IUser>()
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [isLoadMore, setIsLoadMore] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const getPosts = async () => {
+  const getPosts = async (isLoadMore : boolean) => {
     var userId : any;
     await getDataObject("user").then(user => {
       setUser(user);
       userId = user.id;
     })
 
+    let last_id = "0";
+    if(!refreshing && isLoadMore){
+      if(data.length > 0){
+        last_id = data[data.length - 1].id;
+      }
+      setIsLoading(true);
+    }
+
     try {
-      const posts = await axios.post("/post/get_list_posts?last_id=0&index=0&count=20");
+      const posts = await axios.post(`/post/get_list_posts?last_id=${last_id}&index=0&count=20`);
+      
       const mapData = posts.data.data.posts.map((post: any) => {
         let createdDate = new Date(Number.parseInt(post.created));
         let now = new Date();
@@ -60,8 +74,8 @@ function HomeScreen(props: any) {
 
         return ({
           id: post.id,
-          authorName: post.author.username,
-          urlAvatar: post.author.avatar,
+          authorName: post.author.username ? post.author.username : (post.author.id == userId ? 'Me' : 'Unknow'),
+          urlAvatar: post.author.avatar ? post.author.avatar : 'https://i.ibb.co/GsY7vbz/contacts-64.png',
           contentPost: post.described,
           numberImage: post.image ? post.image.length : 0,
           timePost: timePost,
@@ -77,9 +91,22 @@ function HomeScreen(props: any) {
         )
       })
 
-      
-
-      setData(mapData);
+      if(isLoadMore){
+        var listPost = [...data, ...mapData];
+        const uniqueArray = listPost.filter((value, index) => {
+          const _value = JSON.stringify(value);
+          return index === listPost.findIndex(obj => {
+            return JSON.stringify(obj) === _value;
+          });
+        });
+        setData(uniqueArray);
+        setIsLoadMore(false);
+        setIsLoading(false);
+      }
+      else{
+        setData(mapData);
+      }
+      setRefreshing(false);
     } catch (error) {
       throw error;
     }
@@ -119,8 +146,31 @@ function HomeScreen(props: any) {
   }
 
   React.useEffect(() => {
-    getPosts();
+    getPosts(false);
   }, [])
+
+  const handlePullDown = async () => {
+    setRefreshing(true);
+    setData([]);
+    getPosts(false);
+  }
+
+  const handleLoadMore = async (event: any) => {
+    const currentY = event.nativeEvent.contentOffset.y;
+    if(currentY >= 2500 && !isLoadMore){
+      setIsLoadMore(true);
+      await getPosts(true);
+      setIsLoadMore(false);
+    }
+  }
+
+  const handleScrollEndList = async () => {
+    if(!isLoadMore){
+      setIsLoadMore(true);
+      await getPosts(true);
+      setIsLoadMore(false);
+    }
+  }
 
   var lstStory = [
     {
@@ -168,67 +218,89 @@ function HomeScreen(props: any) {
   
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-        stickyHeaderIndices={[1]}
-        scrollEnabled={true}
-        contentContainerStyle={{ flexGrow: 1 }}
-        >
-        <View style={styles.header}>
-          <Image
-            style={styles.logoFB}
-            source={{
-              uri: 'https://static.xx.fbcdn.net/rsrc.php/v3/yP/r/48MsiA6m666.png',
-            }}
-          />
-          <View style={{ flex: 1 }}></View>
-          <TouchableOpacity
-            style={{
-              borderRadius: 50,
-              backgroundColor: '#f1f3f4',
-              width: 30,
-              height: 30,
-              justifyContent: 'center',
-            }}
-            onPress={() => props.navigation.navigate("Search")}>
-            <Icon
-              name="search"
-              color="#000"
-              // backgroundColor="white"
-              style={{ fontSize: 15, textAlign: 'center' }}></Icon>
-          </TouchableOpacity>
-        </View> 
-        <View></View>
-        <View style={styles.avatarContainer}>
-          <TouchableOpacity>
-            <Image
-              resizeMode="cover"
-              style={styles.avatar}
-              source={{uri: user?.avatar}}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={{ flex: 1 }} onPress={() => props.navigation.navigate("UploadPost", {id: null, mode: 1})}>
-            <View style={styles.postBtn}>
-              <Text style={styles.text}>Bạn đang nghĩ gì?</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+      {refreshing ? 
+        <ActivityIndicator/> : 
         <ScrollView
-          style={styles.story}
-          horizontal={true}
-          showsHorizontalScrollIndicator={false}
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+          stickyHeaderIndices={[1]}
+          scrollEnabled={true}
           contentContainerStyle={{ flexGrow: 1 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handlePullDown}
+            />
+          }
+          onScroll={handleLoadMore}
+          onScrollEndDrag={handleScrollEndList}
+          scrollEventThrottle={16}
+          
           >
-          {lstStory.map((story, index) => (
-            <Story key={index} source={story} />
-          ))}
-        </ScrollView>
+          <View style={styles.header}>
+            <Image
+              style={styles.logoFB}
+              source={{
+                uri: 'https://static.xx.fbcdn.net/rsrc.php/v3/yP/r/48MsiA6m666.png',
+              }}
+            />
+            <View style={{ flex: 1 }}></View>
+            <TouchableOpacity
+              onPress={() => props.navigation.navigate("Search")}
+              style={{
+                borderRadius: 50,
+                backgroundColor: '#f1f3f4',
+                width: 30,
+                height: 30,
+                justifyContent: 'center',
+              }}>
+              <Icon
+                name="search"
+                color="#000"
+                // backgroundColor="white"
+                style={{ fontSize: 15, textAlign: 'center' }}></Icon>
+            </TouchableOpacity>
+          </View> 
+          <View></View>
+          <View style={styles.avatarContainer}>
+            <TouchableOpacity>
+              <Image
+                resizeMode="cover"
+                style={styles.avatar}
+                source={{uri: user?.avatar ? user?.avatar : 'https://i.ibb.co/GsY7vbz/contacts-64.png' }}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={{ flex: 1 }} onPress={() => 
+              props.navigation.navigate("UploadPost", 
+                {
+                  id: null, mode: 1, 
+                  onGoBack: () => {handlePullDown();}
+                })}>
+              <View style={styles.postBtn}>
+                <Text style={styles.text}>Bạn đang nghĩ gì?</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+          <ScrollView
+            style={styles.story}
+            horizontal={true}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ flexGrow: 1 }}
+            >
+            {lstStory.map((story, index) => (
+              <Story key={index} source={story} />
+            ))}
+          </ScrollView>
 
-        {data.map((post, index) => (
-          <Post key={index} indexPost={index} data={post} navigation={props.navigation} callBackEvent={callBackEventPost}/>
-        ))}
-      </ScrollView>
+          {data.map((post, index) => (
+            <Post key={index} indexPost={index} data={post} navigation={props.navigation} callBackEvent={callBackEventPost}/>
+          ))}
+          {isLoading && <ActivityIndicator size="large" color='#babec5' />}
+          
+        </ScrollView>
+        
+      }
+      
       
     </SafeAreaView>
   );

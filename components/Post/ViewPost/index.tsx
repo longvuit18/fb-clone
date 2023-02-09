@@ -20,8 +20,10 @@ import Icon from "react-native-vector-icons/FontAwesome5";
 import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import ImagePost from "./Image";
+import ListImage from "./ListImage"
+import axios from "axios";
 
-function ViewPost({ visible, handleEventShow, data }: any) {
+function ViewPost({ visible, handleEventShow, data, objectLike }: any) {
   const [modalVisible, setModalVisible] = useState(visible);
   const [contentPost, setContentPost] = useState(()=>{
     if(data.contentPost && data.contentPost.length > 200){
@@ -46,16 +48,23 @@ function ViewPost({ visible, handleEventShow, data }: any) {
     }
   })
 
-  const images = [
-    {
-      url: data.urlImage[0],
+  const [visibleViewListImage, setVisibleViewListImage] = useState(false);
+  const [indexActive, setIndexActive] = useState<number>(0);
+  const [like, setLike] = useState<any>({
+    liked: objectLike.liked,
+    numberLike: objectLike.numberLike
+  })
+
+  const images = data.urlImage.map((image: any, index: number) => {
+    return {
+      url: image,
       props: {}
     }
-  ]
+  })
 
   const hiddenModal = () => {
     setModalVisible(false);
-    handleEventShow(false);
+    handleEventShow(like);
   };
 
   useEffect(() => {
@@ -65,6 +74,39 @@ function ViewPost({ visible, handleEventShow, data }: any) {
   const handleSeeMore = () => {
     setShowSeeMore(false);
     setContentPost(data.contentPost);
+  }
+
+  const handleViewListImage = (index: number) => {
+    setIndexActive(index);
+    setVisibleViewListImage(true);
+  }
+
+  const onHideViewListImage = () => {
+    setVisibleViewListImage(false);
+  }
+
+  const handleLikePost = async () => {
+    try{
+      const res = await axios.post(`/like/like?id=${data.id}`)
+      var like = objectLike.liked;
+      var numLike = objectLike.numberLike;
+      if(!like){
+        numLike = numLike + 1;
+      }
+      else{
+        numLike = numLike - 1;
+      }
+      var object = {
+        liked: !like,
+        numberLike: numLike
+      }
+      setLike(object);
+      data.numberLike = numLike.toString();
+      data.isLiked = !like;
+    }
+    catch(err){
+      console.log(err);
+    }
   }
 
   return (
@@ -86,6 +128,8 @@ function ViewPost({ visible, handleEventShow, data }: any) {
                   <View style={styles.blackContent}>
                     <ImageViewer 
                       imageUrls={images}
+                      enableSwipeDown={true}
+                      onSwipeDown={hiddenModal}
                     />
                     {/* <Image
                         style={styles.backgroundImage}
@@ -140,7 +184,7 @@ function ViewPost({ visible, handleEventShow, data }: any) {
                       // backgroundColor="white"
                       style={{ marginRight: 5 }}
                     ></Icon>
-                    <Text style={{ color: "#fff" }}>{data.numberLike}</Text>
+                    <Text style={{ color: "#fff" }}>{like.numberLike}</Text>
                     <View style={{ display: "flex", flex: 1 }}>
                       <Text style={{ color: "#fff", textAlign: "right" }}>
                         {data.textComment}
@@ -156,23 +200,23 @@ function ViewPost({ visible, handleEventShow, data }: any) {
                       borderColor: "#babec5",
                     }}
                   >
-                    <TouchableOpacity style={styles.btnOption}>
-                      {data.isLiked && (
+                    <TouchableOpacity style={styles.btnOption} onPress={handleLikePost}>
+                      {like.liked ? (
                         <Icon
                           name="thumbs-up"
                           color="#318bfb"
                           // backgroundColor="white"
                           style={styles.iconBtnOption}></Icon>
-                      )}
-                      
-                      {!data.isLiked && (
+                      ): 
+                      (
                         <Icon
                           name="thumbs-up"
                           color="#fff"
                           // backgroundColor="white"
                           style={styles.iconBtnOption}></Icon>
                       )}
-                      <Text style={{ color: data.isLiked ? '#318bfb' : "#fff" }}>Thích</Text>
+
+                      <Text style={{ color: like.liked ? '#318bfb' : "#fff" }}>Thích</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={[styles.btnOption, { marginRight: 15 }]}
@@ -257,7 +301,7 @@ function ViewPost({ visible, handleEventShow, data }: any) {
                       // backgroundColor="white"
                       style={{ marginRight: 5 }}
                     ></Icon>
-                    <Text style={{ color: "#babec5" }}>{data.numberLike}</Text>
+                    <Text style={{ color: "#babec5" }}>{like.numberLike}</Text>
                     <View style={{ display: "flex", flex: 1 }}>
                       <Text style={{ color: "#babec5", textAlign: "right" }}>
                         {data.textComment}
@@ -273,23 +317,22 @@ function ViewPost({ visible, handleEventShow, data }: any) {
                       borderColor: "#babec5",
                     }}
                   >
-                    <TouchableOpacity style={styles.btnOption}>
-                      {data.isLiked && (
+                    <TouchableOpacity style={styles.btnOption} onPress={handleLikePost}>
+                    {like.liked ? (
                         <Icon
                           name="thumbs-up"
                           color="#318bfb"
                           // backgroundColor="white"
                           style={styles.iconBtnOption}></Icon>
-                      )}
-                      
-                      {!data.isLiked && (
+                      ): 
+                      (
                         <Icon
                           name="thumbs-up"
-                          color="gray"
+                          color="#fff"
                           // backgroundColor="white"
                           style={styles.iconBtnOption}></Icon>
                       )}
-                      <Text style={{ color: data.isLiked ? '#318bfb' : "gray" }}>Thích</Text>
+                      <Text style={{ color: like.liked ? '#318bfb' : "gray" }}>Thích</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={[styles.btnOption, { marginRight: 15 }]}
@@ -316,8 +359,10 @@ function ViewPost({ visible, handleEventShow, data }: any) {
               </View>
               {data.numberImage > 1 &&
                 data.urlImage.map((image: string, index: number) => (
-                  <ImagePost key={index} urlImage={image} />
+                  <ImagePost key={index} urlImage={image} callBackEvent={()=>{handleViewListImage(index)}}/>
                 ))}
+
+                <ListImage visible={visibleViewListImage} handleEventShow={onHideViewListImage} data={images} index={indexActive}/>
             </ScrollView>
           )}
         </Modal>

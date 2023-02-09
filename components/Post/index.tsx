@@ -46,6 +46,11 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
     }
   })
 
+  const [objectLike, setObjectLike] = useState<any>({
+    liked: data.isLiked,
+    numberLike: Number.parseInt(data.numberLike)
+  })
+
   const onPress = () => {
     setVisibleOption(true);
   }
@@ -58,8 +63,9 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
     setVisibleComment(false);
   }
 
-  const onHideViewPost = () => {
+  const onHideViewPost = (object: any) => {
     setVisibleViewPost(false);
+    setObjectLike(object);
   }
 
   const handleSeeMore = () => {
@@ -71,8 +77,8 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
     navigation.navigate("PostComment", 
     {
       id: data.id, 
-      isLike: data.isLiked, 
-      numberLike: data.numberLike
+      objectLike: objectLike,
+      onGoBack: (object: any) => {setObjectLike(object)}
     });
   }
 
@@ -99,6 +105,30 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
     .catch((err) => {
       alert("Có lỗi xảy ra. Vui lòng thử lại!")
     })
+  }
+
+  const handleLikePost = async () => {
+    try{
+      const res = await axios.post(`/like/like?id=${data.id}`)
+      var like = objectLike.liked;
+      var numLike = objectLike.numberLike;
+      if(!like){
+        numLike = numLike + 1;
+      }
+      else{
+        numLike = numLike - 1;
+      }
+      var object = {
+        liked: !like,
+        numberLike: numLike
+      }
+      setObjectLike(object);
+      data.numberLike = numLike.toString();
+      data.isLiked = !like;
+    }
+    catch(err){
+      console.log(err);
+    }
   }
 
   return (
@@ -275,7 +305,7 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
               color="#318bfb"
               // backgroundColor="white"
               style={{ marginRight: 5 }}></Icon>
-            <Text style={{ color: '#babec5' }}>{data.numberLike}</Text>
+            <Text style={{ color: '#babec5' }}>{objectLike.numberLike}</Text>
             <View style={{ display: 'flex', flex: 1 }}>
               <Text style={{ color: '#babec5', textAlign: 'right' }}>
                 {data.textComment}
@@ -283,23 +313,22 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
             </View>
           </View>
           <View style={{ height: 40, flexDirection: 'row', paddingHorizontal: 10, borderTopWidth: 1, borderColor: '#babec5' }}>
-            <TouchableOpacity style={styles.btnOption}>
-              {data.isLiked && (
+            <TouchableOpacity style={styles.btnOption} onPress={handleLikePost}>
+              {objectLike.liked ? (
                 <Icon
                   name="thumbs-up"
                   color="#318bfb"
                   // backgroundColor="white"
                   style={styles.iconBtnOption}></Icon>
-              )}
-              
-              {!data.isLiked && (
-                <Icon
-                  name="thumbs-up"
-                  color="#babec5"
-                  // backgroundColor="white"
-                  style={styles.iconBtnOption}></Icon>
-              )}
-              <Text style={{ color: data.isLiked ? '#318bfb' : "#babec5" }}>Thích</Text>
+              ): 
+              (<Icon
+                name="thumbs-up"
+                color="#babec5"
+                // backgroundColor="white"
+                style={styles.iconBtnOption}></Icon>)
+              }
+
+              <Text style={{ color: objectLike.liked ? '#318bfb' : "#babec5" }}>Thích</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.btnOption, {marginRight: 15}]} onPress={handleShowComment}>
               <Icon
@@ -334,7 +363,12 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
         visible={visibleComment} 
         handleEventShow={onHideComment}
       /> */}
-      <ViewPost visible={visibleViewPost} handleEventShow={onHideViewPost} data={data} />
+      <ViewPost 
+        visible={visibleViewPost} 
+        handleEventShow={onHideViewPost} 
+        data={data}
+        objectLike={objectLike} 
+      />
     </SafeAreaView>
   );
 }

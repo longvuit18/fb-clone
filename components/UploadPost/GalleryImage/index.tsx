@@ -20,6 +20,7 @@ import ImageViewer from 'react-native-image-zoom-viewer';
 import Icon from "react-native-vector-icons/FontAwesome5";
 import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { getStatusBarHeight } from "react-native-status-bar-height";
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -41,6 +42,7 @@ function GalleryImage({ visible, handleEventShow, data, numberImage, lstSelected
   }, [lstSelected]);
 
   const handleSelectedImage = (selected : boolean, index : number) => {
+    console.log(numberImage);
     if(selected){
       var indexList = imageSelected.indexOf(index);
       var tmpArray = imageSelected;
@@ -154,6 +156,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#babec5",
+    marginTop: getStatusBarHeight()
   },
   btnPost: {
     height: 35,

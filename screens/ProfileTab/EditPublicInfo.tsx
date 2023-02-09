@@ -43,7 +43,7 @@ export default function EditPublicInfo({ route }: any) {
       var user = userInfo;
       if (type_image == 0) {
         user.avatar_url = image.uri;
-        console.log(image.uri)
+        // console.log(image.uri)
       } else {
         user.cover_url = image.uri;
       }
@@ -88,7 +88,7 @@ export default function EditPublicInfo({ route }: any) {
 
       var rt = {
         "uri": temp,
-        "name": "avatar",
+        "name": "cover_image",
         "type": "image/" + t
       }
 
@@ -131,7 +131,7 @@ export default function EditPublicInfo({ route }: any) {
     let queryString = new URLSearchParams({ ...modal }).toString();
     uri = uri + queryString;
 
-    console.log(uri)
+    // console.log(uri)
     fetch(uri, requestOptions)
       .then((response) => response.json())
       .then((data) => {
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     marginVertical: 10
   },
   lastDetail: {
-    marginBottom: 30,
+    marginBottom: 100,
     borderBottomWidth: 0
   },
   btnModifyMore: {

@@ -11,7 +11,9 @@ import {
   Modal,
   ScrollView,
   Alert, 
-  TextInput
+  TextInput,
+  StatusBar,
+  BackHandler
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
@@ -29,15 +31,19 @@ interface IComment  {
   isBlock?: boolean,
 }
 
-function Comment({route}: any) {
+function Comment(props: any) {
+  const { navigation, route } = props;
   const [isLoading, setIsLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
   const [data, setData] = useState<IComment[]>([]);
   const [curIndex, setCurIndex] = useState(0);
   const [contentComment, setContentComment] = useState('');
-  const [numberLike, setNumberLike] = useState(route.params.numberLike)
+  const [objectLike, setObjectLike] = useState<any>({
+    liked: route.params.objectLike.liked,
+    numberLike: route.params.objectLike.numberLike
+  })
 
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
   let inputRef = useRef<TextInput>(null);
 
   const getComments = async (index: number) => {
@@ -159,15 +165,58 @@ function Comment({route}: any) {
     })
   }
 
+  const handleLikePost = async () => {
+    try{
+      const res = await axios.post(`/like/like?id=${route.params.id}`)
+      var like = objectLike.liked;
+      var numLike = objectLike.numberLike;
+      if(!like){
+        numLike = numLike + 1;
+      }
+      else{
+        numLike = numLike - 1;
+      }
+      var object = {
+        liked: !like,
+        numberLike: numLike
+      }
+      console.log(object);
+      setObjectLike(object);
+    }
+    catch(err){
+      console.log(err);
+    }
+  }
+
+  const handleGoBack = () => {
+    route.params.onGoBack(objectLike);
+    navigation.goBack()
+    
+  }
+
   useEffect(() => {
     getComments(0);
   }, []);
+
+  useEffect(() => {
+    const backAction = () => {
+      handleGoBack();
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction,
+    );
+
+    return () => backHandler.remove();
+  }, [objectLike]);
 
   return (
     <SafeAreaView style={styles.container}>
       <GestureRecognizer
         style={{flex: 1}}
-        onSwipeRight={()=>{navigation.goBack()}}
+        onSwipeRight={handleGoBack}
       >
           <View style={styles.centeredView}>
             <View style={styles.header}>
@@ -178,30 +227,29 @@ function Comment({route}: any) {
                         // backgroundColor="white"
                         style={{ marginRight: 5 }}>    
                     </Icon>
-                    <Text style={{fontWeight: "900"}}>{numberLike}</Text>
+                    <Text style={{fontWeight: "900"}}>{objectLike.numberLike}</Text>
                 </View>
                 <View style={{flex: 1}}>
 
                 </View>
-                <TouchableOpacity>
-                {route.params.isLike && 
-                    <Icon
+                <TouchableOpacity onPress={handleLikePost}>
+                  {objectLike.liked ? 
+                    (<Icon
                         name="thumbs-up"
                         color="#318bfb"
                         // backgroundColor="white"
                         style={{ marginRight: 5, fontSize: 20 }}>    
                     </Icon>
-                }
-
-                {!route.params.isLike && 
-                    <Icon
-                        name="thumbs-up"
-                        color="#babec5"
-                        // backgroundColor="white"
-                        style={{ marginRight: 5, fontSize: 20 }}>    
-                    </Icon>
-                }
-                    
+                    ) :
+                    (
+                      <Icon
+                          name="thumbs-up"
+                          color="#babec5"
+                          // backgroundColor="white"
+                          style={{ marginRight: 5, fontSize: 20 }}>    
+                      </Icon>
+                    )
+                  } 
                 </TouchableOpacity>
             </View>
             <View>
@@ -337,6 +385,7 @@ function Comment({route}: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: StatusBar.currentHeight,
     // justifyContent: 'center',
     // alignItems: 'center',
   },
