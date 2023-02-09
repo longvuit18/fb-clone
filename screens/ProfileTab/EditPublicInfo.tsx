@@ -81,7 +81,7 @@ export default function EditPublicInfo({ route }: any) {
   const saveData = async () => {
     const temp = "firebasestorage";
     var formData = new FormData();
-    if (userInfo.cover_url !== null && !temp.includes(userInfo.cover_url.toLowerCase())) {
+    if (userInfo.cover_url != null && !temp.includes(userInfo.cover_url.toLowerCase())) {
       let temp = userInfo.cover_url.toString();
       var type = temp.split(".");
       var t = type[type.length - 1];
@@ -95,19 +95,19 @@ export default function EditPublicInfo({ route }: any) {
       formData.append("cover_image", rt as any);
     }
 
-    // if (userInfo.avatar_url !== null && !temp.includes(userInfo.avatar_url.toLowerCase())) {
-    //   let temp = userInfo.avatar_url.toString();
-    //   var type = temp.split(".");
-    //   var t = type[type.length - 1];
+    if (userInfo.avatar_url != null && !temp.includes(userInfo.avatar_url.toLowerCase())) {
+      let temp = userInfo.avatar_url.toString();
+      var type = temp.split(".");
+      var t = type[type.length - 1];
 
-    //   var rt = {
-    //     "uri": temp,
-    //     "name": "avatar",
-    //     "type": "image/" + t
-    //   }
+      var rt = {
+        "uri": temp,
+        "name": "avatar",
+        "type": "image/" + t
+      }
 
-    //   formData.append("avatar", rt as any);
-    // }
+      formData.append("avatar", rt as any);
+    }
 
     var requestOptions: RequestInit = {
       method: "POST",
@@ -118,6 +118,12 @@ export default function EditPublicInfo({ route }: any) {
       body: formData
     };
 
+    if (formData.getAll.length <= 1) {
+      delete requestOptions["body"]; 
+      requestOptions["headers"] = new Headers({
+        'Content-Type': 'application/json',
+      })
+    }
 
     var uri = `${BASE_URL}/user/set_user_info?`;
     const modal = {} as IQueryString;
@@ -249,7 +255,7 @@ export default function EditPublicInfo({ route }: any) {
         </View>
         <View style={{ ...styles.detail, ...styles.lastDetail }}>
           <TouchableOpacity style={styles.btnModifyMore} onPress={saveData}>
-            <Text style={{ color: '#318bfb', fontSize: 16, fontWeight: '500' }}>Save</Text>
+            <Text style={{ color: '#318bfb', fontSize: 16, fontWeight: '500' }}>Lưu thông tin</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -274,7 +280,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff'
   },
   navigationBar: {
-    paddingTop: STATUSBAR_HEIGHT,
     flexDirection: 'row',
     height: 50,
     alignItems: 'center',
