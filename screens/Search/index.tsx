@@ -55,19 +55,19 @@ export default function Search(props) {
     setDeleteID(id);
     deleteRecentSearch();
   }
-  const getBlockList = async () => {
-    try {
-      const response = await axios.post(`/friend/get_list_blocks?index=0&count=10`);
-      const data = response.data.data;
-      var res = [];
-      for (var i = 0; i < data.length; i += 1) {
-        res.push(data[i]["id"]);
-      }
-      setBlockList(res);
-    } catch (error) {
-      throw error;
-    }
-  }
+  // const getBlockList = async () => {
+  //   try {
+  //     const response = await axios.post(`/friend/get_list_blocks?index=0&count=10`);
+  //     const data = response.data.data;
+  //     var res = [];
+  //     for (var i = 0; i < data.length; i += 1) {
+  //       res.push(data[i]["id"]);
+  //     }
+  //     setBlockList(res);
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
   const getRecentSearch = async () => {
     try {
       const recent = await axios.post(`/search/get_saved_search?index=0&count=10`);
@@ -117,16 +117,17 @@ export default function Search(props) {
     try {
       var uri = "/search/search?index=0&count=20&keyword=" + keyword.toString();
       const posts = await axios.post(uri);
-      const mapData = posts.data.data.posts.map((post: any) => {
+      console.log(posts)
+      const mapData = posts.data.data.map((post: any) => {
         if (blockList.includes(post.author.id) == false) {
-          let createdDate = new Date(Number.parseInt(post.created));
+          let createdDate = new Date(Number.parseInt((post.created * 1000).toString()));
           let now = new Date();
           let timePost = getTimeBetweenTwoDate(createdDate, now);
           let urlImage: any[] = [];
           let numberImage = post.image ? post.image.length : 0;
           if (numberImage > 0) {
             post.image.forEach((image: any) => {
-              return urlImage.push(image.url)
+              return urlImage.push(image)
             })
           }
 
@@ -155,11 +156,12 @@ export default function Search(props) {
        });
       setData(mapData);
     } catch (error) {
+      //console.error(error.response.data)
       throw error;
     }
   }
   React.useEffect(() => {
-    getBlockList();
+    // getBlockList();
     getRecentSearch();
   }, [])
   return (
@@ -185,9 +187,9 @@ export default function Search(props) {
         style={{ ...styles.resultWrapper, height: SCREEN_HEIGHT - STATUSBAR_HEIGHT - 50 - 48 }}
         bounces={false}>
         {data.map((post, index) => (
-          <TouchableOpacity>
+          <TouchableOpacity key={"post" + index}>
             {data.length !== 0
-              ? (<Post key={index} indexPost={index} data={post} navigation={props.navigation} callBackEvent={callBackEventPost} />)
+              ? (<Post  indexPost={index} data={post} navigation={props.navigation} callBackEvent={callBackEventPost} />)
               : (<View><Text>Không có bài viết</Text></View>)}
           </TouchableOpacity>
         ))}
