@@ -123,28 +123,32 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
     })
   }
 
-  const handleLikePost = async () => {
+  const handleLikePost = () => {
     if(!netInfo.isConnected){
       alert("Bạn cần kết nối internet để sử dụng!");
       return;
     }
+    var like = objectLike.liked;
+    var numLike = objectLike.numberLike;
+    if(!like){
+      numLike = numLike + 1;
+    }
+    else{
+      numLike = numLike - 1;
+    }
+    var object = {
+      liked: !like,
+      numberLike: numLike
+    }
+    setObjectLike(object);
+    data.numberLike = numLike.toString();
+    data.isLiked = !like;
+    callServerSaveLike();
+  }
+
+  const callServerSaveLike = () => {
     try{
-      const res = await axios.post(`/like/like?id=${data.id}`)
-      var like = objectLike.liked;
-      var numLike = objectLike.numberLike;
-      if(!like){
-        numLike = numLike + 1;
-      }
-      else{
-        numLike = numLike - 1;
-      }
-      var object = {
-        liked: !like,
-        numberLike: numLike
-      }
-      setObjectLike(object);
-      data.numberLike = numLike.toString();
-      data.isLiked = !like;
+      axios.post(`/like/like?id=${data.id}`)
     }
     catch(err){
       console.log(err);
