@@ -184,7 +184,12 @@ function ViewPost({ visible, handleEventShow, data, objectLike }: any) {
                       // backgroundColor="white"
                       style={{ marginRight: 5 }}
                     ></Icon>
-                    <Text style={{ color: "#fff" }}>{like.numberLike}</Text>
+                    <Text style={{ color: "#fff" }}>
+                      {like.liked ? 
+                        (like.numberLike -1 ) == 0 ? like.numberLike :
+                        "Bạn và " + (like.numberLike -1 ) + " người khác"
+                        : like.numberLike}
+                    </Text>
                     <View style={{ display: "flex", flex: 1 }}>
                       <Text style={{ color: "#fff", textAlign: "right" }}>
                         {data.textComment}
@@ -301,7 +306,12 @@ function ViewPost({ visible, handleEventShow, data, objectLike }: any) {
                       // backgroundColor="white"
                       style={{ marginRight: 5 }}
                     ></Icon>
-                    <Text style={{ color: "#babec5" }}>{like.numberLike}</Text>
+                    <Text style={{ color: "#babec5" }}>
+                      {like.liked ? 
+                        (like.numberLike -1 ) == 0 ? like.numberLike :
+                        "Bạn và " + (like.numberLike -1 ) + " người khác"
+                        : like.numberLike}
+                    </Text>
                     <View style={{ display: "flex", flex: 1 }}>
                       <Text style={{ color: "#babec5", textAlign: "right" }}>
                         {data.textComment}
