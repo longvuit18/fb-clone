@@ -1,5 +1,5 @@
 import React, { Component, useState } from "react";
-import { StyleSheet, Text, View, Image, TextInput, ScrollView, Button, StatusBar, TouchableOpacity, TouchableHighlight, ActivityIndicator, Pressable } from "react-native";
+import { StyleSheet, Text, View, Image, TextInput, ScrollView, Button, StatusBar, TouchableOpacity, TouchableHighlight, ActivityIndicator, Pressable, Alert } from "react-native";
 import axios from "axios";
 import { useStore } from "../store";
 import GalleryImage from "../components/UploadPost/GalleryImage";
@@ -47,27 +47,29 @@ const ChangeInfoUser = ({ navigation, route }: any) => {
         var rt = {
           "uri": temp,
           "name": temp.substring(temp.lastIndexOf('/') + 1, temp.length),
-          "type": "image/png"
+          "type": "image/" + t
         }
 
         formData.append("avatar", rt as any);
-        console.log(mime.getExtension(temp))
-        console.log(galleryImage?.[idImage])
       }
       
-      // setInvalid(false);
-      // setLoading(true);
-      const res = await axios.post(`/auth/change_info_after_signup?username=${username}`, formData, {
+      setInvalid(false);
+      setLoading(true);
+      const res = await axios.post(`/auth/change_info_after_signup?username=${username}&token=${token}`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data',
         }
       });
-      dispatch({ type: "LOGIN", payload: { ...res.data?.data, token } })
-      // setLoading(false);
+      Alert.alert('Thông báo', 'Cập nhật thông tin cá nhân thành công!', [
+        {text: 'OK', onPress: () => dispatch({ type: "LOGIN", payload: { ...res.data?.data, token } })},
+      ]);
+      
+
+      setLoading(false);
     } catch (error) {
-      console.log(error)
-      // setInvalid(true);
-      // setLoading(false);
+      console.log(error.response.data)
+      setInvalid(true);
+      setLoading(false);
     }
 
 

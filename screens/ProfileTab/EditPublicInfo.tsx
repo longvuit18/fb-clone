@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Text, StyleSheet, View, ScrollView, TouchableOpacity, Image, TextInput } from 'react-native'
+import { Text, StyleSheet, View, ScrollView, TouchableOpacity, Image, TextInput, Alert, Pressable } from 'react-native'
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 import { BASE_URL, SCREEN_HEIGHT, STATUSBAR_HEIGHT } from '../../constants'
 // import ExTouchableOpacity from '../../components/ExTouchableOpacity'
@@ -8,7 +8,10 @@ import { useNavigation } from '@react-navigation/native';
 import * as Permissions from "expo-permissions";
 import * as MediaLibrary from "expo-media-library";
 import GalleryImage from "../../components/UploadPost/GalleryImage"
-import { getData, getDataObject, IUser, useStore } from '../../store';
+import { getData, getDataObject, IUser, IUserInfo, userInfoInitData, useStore } from '../../store';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator } from 'react-native-paper';
+import axios from 'axios';
 
 const acessType = ["jpeg", "jpg", "png"];
 const MAX_IMAGE_SIZE = 4194000; //(Bytes)
@@ -16,22 +19,18 @@ const MAX_IMAGE_SIZE = 4194000; //(Bytes)
 interface IQueryString { token: string, username: string, description: string, address: string, city: string, country: string, link: string }
 
 export default function EditPublicInfo({ route }: any) {
-  var userInfo_1 = route.params.user
-
+  const userInfo_1 = route.params.user as IUserInfo ?? userInfoInitData;
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
-  const [userInfo, setUserInfo] = useState(userInfo_1);
+  const [userInfo, setUserInfo] = useState(() => userInfo_1);
   const [galleryImage, setGalleryImage] = useState<MediaLibrary.Asset[]>([])
   const [showGalleryImage, setShowGalleryImage] = useState(false);
   const [lstImageSelected, setLstImageSelected] = useState<number[]>([]);
-
+  const [localAvatar, setLocalAvatar] = useState("");
+  const [localCoverImage, setLocalCoverImage] = useState("");
   const [typeImage, setTypeImage] = useState(0)
-  const { state } = useStore();
-  const [descrip, setDescrip] = useState<string>("");
-  const [nName, setNName] = useState<string>("");
-  const [address, setAddres] = useState<string>("");
-  const [city, setCity] = useState<string>("");
-  const [country, setCountry] = useState<string>("");
-  
+  const { dispatch } = useStore();
+
   const onHiddenGallery = () => {
     setShowGalleryImage(false)
   }
@@ -42,11 +41,13 @@ export default function EditPublicInfo({ route }: any) {
 
       var user = userInfo;
       if (type_image == 0) {
-        user.avatar_url = image.uri;
+        // user.avatar = image.uri;
+        setLocalAvatar(image.uri);
         // console.log(image.uri)
       } else {
-        user.cover_url = image.uri;
-      }
+        // user.cover_image = image.uri;
+        setLocalCoverImage(image.uri);
+      } 
 
       setUserInfo({ ...user })
     }
@@ -79,73 +80,83 @@ export default function EditPublicInfo({ route }: any) {
 
 
   const saveData = async () => {
-    const temp = "firebasestorage";
-    var formData = new FormData();
-    if (userInfo.cover_url != null && !temp.includes(userInfo.cover_url.toLowerCase())) {
-      let temp = userInfo.cover_url.toString();
-      var type = temp.split(".");
-      var t = type[type.length - 1];
+    const formData = new FormData();
+    if (localAvatar) {
+      
+      const type = localAvatar.split(".");
+      const t = type[type.length - 1];
 
       var rt = {
-        "uri": temp,
-        "name": "cover_image",
-        "type": "image/" + t
-      }
-
-      formData.append("cover_image", rt as any);
-    }
-
-    if (userInfo.avatar_url != null && !temp.includes(userInfo.avatar_url.toLowerCase())) {
-      let temp = userInfo.avatar_url.toString();
-      var type = temp.split(".");
-      var t = type[type.length - 1];
-
-      var rt = {
-        "uri": temp,
-        "name": "avatar",
+        "uri": localAvatar,
+        "name": localAvatar.substring(localAvatar.lastIndexOf('/') + 1, localAvatar.length) + Date.now(),
         "type": "image/" + t
       }
 
       formData.append("avatar", rt as any);
     }
 
-    var requestOptions: RequestInit = {
-      method: "POST",
-      headers: new Headers({
-        'Accept': 'application/json',
-        'Content-Type': 'multipart/form-data',
-      }),
-      body: formData
-    };
+    if (localCoverImage) {
+      const type = localCoverImage.split(".");
+      const t = type[type.length - 1];
 
-    if (formData.getAll.length <= 1) {
-      delete requestOptions["body"]; 
-      requestOptions["headers"] = new Headers({
-        'Content-Type': 'application/json',
-      })
+      const rt = {
+        "uri": localCoverImage,
+        "name": localCoverImage.substring(localCoverImage.lastIndexOf('/') + 1, localCoverImage.length) + Date.now(),
+        "type": "image/" + t
+      }
+
+      formData.append("cover_image", rt as any);
     }
 
-    var uri = `${BASE_URL}/user/set_user_info?`;
+    // if (formData.getAll.length <= 1) {
+    //   delete requestOptions["body"];
+    //   requestOptions["headers"] = new Headers({
+    //     'Content-Type': 'application/json',
+    //   })
+    // }
+
+    let uri = `/user/set_user_info?`;
     const modal = {} as IQueryString;
-    modal.token = state.accessToken;
-    modal.username = nName !== "" ? nName : userInfo.name;
-    modal.description = descrip !== "" ? descrip : userInfo.introTxt;
-    modal.address = address !== "" ? address : userInfo.live_in;
-    modal.city = city !== "" ? city : userInfo.from;
-    modal.country = country !== "" ? country : "";
+    modal.username =  userInfo.username;
+    modal.description = userInfo.description;
+    modal.address =  userInfo.address;
+    modal.city = userInfo.city;
+    modal.country =  userInfo.country;
     modal.link = "";
     let queryString = new URLSearchParams({ ...modal }).toString();
     uri = uri + queryString;
+    setLoading(true);
 
-    // console.log(uri)
-    fetch(uri, requestOptions)
-      .then((response) => response.json())
-      .then((data) => {
-        console.log('Success:', data);
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
+    try {
+      let res;
+      if (!!localAvatar || !!localCoverImage) {
+        res = await axios.post(uri, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        });
+      } else {
+        res = await axios.post(uri, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        });
+      }
+      
+      console.log(res.data.data)
+      dispatch({ type: "UPDATE_USER_INFO", payload: { userInfo: res.data.data } })
+      Alert.alert('Thông báo', 'Cập nhật thông tin thành công', [
+        {
+          text: 'OK', onPress: () => {
+            navigation.goBack();
+          }
+        },
+      ]);
+    } catch (error) {
+      console.error('Error:', error.response.data);
+    } finally {
+      setLoading(false);
+    }
   }
 
 
@@ -163,8 +174,12 @@ export default function EditPublicInfo({ route }: any) {
       });
   }
 
+  const changeValueInput = (name: string, value: string) => {
+    setUserInfo({...userInfo, [name]: value})
+  }
+
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.navigationBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.btnBack}>
           <FontAwesome5Icon name="arrow-left" color="#000" size={20} />
@@ -175,88 +190,88 @@ export default function EditPublicInfo({ route }: any) {
         <View style={{ ...styles.detail, paddingTop: 0 }}>
           <View style={styles.detailTitleWrapper}>
             <Text style={styles.detailTitle}>Ảnh đại diện</Text>
-            <TouchableOpacity onPress={() => handleEditAvatar(0)}>
+            {!userInfo.avatar && <TouchableOpacity onPress={() => handleEditAvatar(0)}>
               <Text style={{ fontSize: 16, color: "#318bfb" }}>Thay đổi</Text>
-            </TouchableOpacity>
+            </TouchableOpacity>}
           </View>
           <TouchableOpacity activeOpacity={0.8}>
-            <Image source={{ uri: userInfo.avatar_url }} style={styles.avatar}></Image>
+            <Image source={{ uri: !!localAvatar ? localAvatar : userInfo.avatar }} style={styles.avatar}></Image>
           </TouchableOpacity>
         </View>
         <View style={styles.detail}>
           <View style={styles.detailTitleWrapper}>
             <Text style={styles.detailTitle}>Ảnh bìa</Text>
-            <TouchableOpacity onPress={() => handleEditAvatar(1)}>
+            {!userInfo.cover_image && <TouchableOpacity onPress={() => handleEditAvatar(1)}>
               <Text style={{ fontSize: 16, color: "#318bfb" }}>Thay đổi</Text>
-            </TouchableOpacity>
+            </TouchableOpacity>}
           </View>
           <TouchableOpacity activeOpacity={0.8}>
-            <Image source={{ uri: userInfo.cover_url }} style={styles.cover}></Image>
+            <Image source={{ uri: !!localCoverImage ? localCoverImage : userInfo.cover_image }} style={styles.cover}></Image>
           </TouchableOpacity>
         </View>
         <View style={styles.detail}>
           <View style={styles.detailTitleWrapper}>
             <Text style={styles.detailTitle}>Tiểu sử</Text>
           </View>
-          <TextInput 
-                placeholder={userInfo.introTxt}
-                placeholderTextColor="#000000"
-                onChangeText={newText => setDescrip(newText)}
-                style={styles.textInput}
-                />
+          <TextInput
+            value={userInfo?.description ?? ""}
+            placeholderTextColor="#000000"
+            onChangeText={newText => changeValueInput("description", newText)}
+            style={styles.textInput}
+          />
         </View>
         <View style={styles.detail}>
           <View style={styles.detailTitleWrapper}>
             <Text style={styles.detailTitle}>Chi tiết</Text>
           </View>
           <View style={styles.introListWrapper}>
-          <View style={styles.introLine}>
+            <View style={styles.introLine}>
               <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="user" />
               <Text style={styles.introLineText}>Họ tên</Text>
-              <TextInput 
-                placeholder={userInfo.name}
+              <TextInput
+                value={userInfo?.username ?? ""}
                 placeholderTextColor="#000000"
-                onChangeText={newText => setNName(newText)}
+                onChangeText={newText => changeValueInput("username", newText)}
                 style={styles.textInput}
-                />
+              />
             </View>
             <View style={styles.introLine}>
               <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="home" />
               <Text style={styles.introLineText}>Địa chỉ</Text>
-              <TextInput 
-                placeholder={userInfo.live_in}
+              <TextInput
+                value={userInfo?.address ?? ""}
                 placeholderTextColor="#000000"
-                onChangeText={newText => setAddres(newText)}
+                onChangeText={newText => changeValueInput("address", newText)}
                 style={styles.textInput}
-                />
+              />
             </View>
-            
+
             <View style={styles.introLine}>
               <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="map-marker-alt" />
               <Text style={styles.introLineText}>Thành Phố</Text>
-              <TextInput 
-                placeholder={userInfo.from}
+              <TextInput
+                value={userInfo?.city  ?? ""}
                 placeholderTextColor="#000000"
-                onChangeText={newText => setCity(newText)}
+                onChangeText={newText => changeValueInput("city", newText)}
                 style={styles.textInput}
-                />
+              />
             </View>
             <View style={styles.introLine}>
               <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="globe" />
               <Text style={styles.introLineText}>Quốc gia</Text>
-              <TextInput 
-                placeholder={userInfo.country}
+              <TextInput
+                value={userInfo?.country ?? ""}
                 placeholderTextColor="#000000"
-                onChangeText={newText => setCountry(newText)}
+                onChangeText={newText => changeValueInput("country", newText)}
                 style={styles.textInput}
-                />
+              />
             </View>
           </View>
         </View>
         <View style={{ ...styles.detail, ...styles.lastDetail }}>
-          <TouchableOpacity style={styles.btnModifyMore} onPress={saveData}>
-            <Text style={{ color: '#318bfb', fontSize: 16, fontWeight: '500' }}>Lưu thông tin</Text>
-          </TouchableOpacity>
+          <Pressable style={styles.btnModifyMore} onPress={saveData} disabled={loading}>
+            <Text style={{ color: '#318bfb', fontSize: 16, fontWeight: '500' }}>{loading ? <ActivityIndicator /> : "Lưu thông tin"}</Text>
+          </Pressable>
         </View>
       </ScrollView>
       <GalleryImage
@@ -269,7 +284,7 @@ export default function EditPublicInfo({ route }: any) {
         screen={"Info"}
         type_image={typeImage}
       />
-    </View>
+    </SafeAreaView>
 
   )
 }

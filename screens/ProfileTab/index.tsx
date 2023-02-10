@@ -5,74 +5,88 @@ import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 import { getData, getDataObject, IUser, useStore } from '../../store';
 import axios from "axios";
 
-export default function index(props: any) {
+export default function Profile(props: any) {
     const [user, setUser] = useState({
-        cover_url: "",
-        avatar_url: "",
-        name: "",
+        cover_image: undefined,
+        avatar: undefined,
+        username: "",
         subName: "",
-        introTxt: "",
-        live_in: "",
-        from: "",
-        follower: "",
+        description: "",
+        address: "",
+        city: "",
+        listing: "",
         country: ""
     })
 
-    const { state } = useStore();
+    const { state, dispatch } = useStore();
     useEffect(() => {
         getProfile();
     }, [])
     const getProfile = async () => {
+
+        if (state.userInfo) {
+            setUser({ ...user, ...state.userInfo });
+            return;
+        }
         try {
             const res = await axios.post(`/user/get_user_info?user_id=${state.user.id}`)
             const mapUser = res.data.data
             const mapData = ({
-                cover_url: mapUser?.cover_image ?? "",
-                avatar_url: mapUser?.avatar ?? "",
-                name: mapUser?.username ?? "",
+                cover_image: mapUser?.cover_image ?? undefined,
+                avatar: mapUser?.avatar ?? undefined,
+                username: mapUser?.username ?? "",
                 subName: "",
-                introTxt: mapUser?.description ?? "",
-                live_in: mapUser?.address ?? "",
-                from: mapUser?.city ?? "",
-                follower: mapUser?.listing ?? "",
+                description: mapUser?.description ?? "",
+                address: mapUser?.address ?? "",
+                city: mapUser?.city ?? "",
+                listing: mapUser?.listing ?? "",
                 country: mapUser?.country ?? "",
             })
 
             setUser(mapData);
+            console.log(mapUser)
+            dispatch({ type: "UPDATE_USER_INFO", payload: { userInfo: mapData } })
+
         }
         catch (error) {
             console.log(error)
         }
-
     }
-    
+
+    useEffect(() => {
+        if (!!state.userInfo) {
+            setUser(state.userInfo);
+        }
+
+    }, [state.userInfo])
+
     return (
         <ScrollView bounces={false} style={styles.container}>
             <View style={styles.infoWrapper}>
                 <View style={styles.avatarCoverWrapper}>
                     <TouchableOpacity activeOpacity={0.8}>
-                        <Image style={styles.cover} source={{ uri: user.cover_url }} />
+                        <Image style={styles.cover} source={{ uri: user.cover_image }} />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.btnChangeCover}>
+                    {/* <TouchableOpacity style={styles.btnChangeCover}>
                         <FontAwesome5Icon size={18} name="camera" />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                     <View style={styles.avatarWrapper}>
                         <TouchableOpacity activeOpacity={0.9}>
-                            <Image style={styles.avatar} source={{ uri: user.avatar_url }} />
+                            <Image style={styles.avatar} source={{ uri: user.avatar }} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.btnChangeAvatar}>
+                        {/* <TouchableOpacity style={styles.btnChangeAvatar}>
                             <FontAwesome5Icon size={18} name="camera" />
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </View>
                 </View>
                 <View style={styles.introWrapper}>
-                    <Text style={styles.name}>{user.name}</Text>
+                    <Text style={styles.name}>{user.username}</Text>
                     <Text style={styles.subName}>{user.subName}</Text>
-                    <Text style={styles.introTxt}>{user.introTxt}</Text>
+                    <Text style={styles.description}>{user.description}</Text>
                     <View style={styles.introOptionsWrapper}>
                         <TouchableOpacity activeOpacity={0.8} style={styles.btnAddStory}>
                             <FontAwesome5Icon size={16} color="#fff" name="plus-circle" />
-                            <Text style={{ fontSize: 16, fontWeight: '500', color: '#fff', marginLeft: 5 }}>Add to your story</Text>
+                            <Text style={{ fontSize: 16, fontWeight: '500', color: '#fff', marginLeft: 5 }}>Thêm store của bạn</Text>
                         </TouchableOpacity>
                         <TouchableOpacity activeOpacity={0.8} style={styles.btnOption}>
                             <FontAwesome5Icon size={20} color="#000" name="ellipsis-h" />
@@ -83,44 +97,35 @@ export default function index(props: any) {
                     <View style={styles.introLine}>
                         <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="home" />
                         <Text style={styles.introLineText}>
-                            Live in <Text style={styles.introHightLight}>{user.live_in}</Text>
+                            Sống ở <Text style={styles.introHightLight}>{user.address}</Text>
                         </Text>
                     </View>
                     <View style={styles.introLine}>
                         <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="map-marker-alt" />
                         <Text style={styles.introLineText}>
-                            From <Text style={styles.introHightLight}>{user.from}</Text>
+                            From <Text style={styles.introHightLight}>{user.city}</Text>
                         </Text>
                     </View>
                     <View style={styles.introLine}>
                         <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="globe" />
                         <Text style={styles.introLineText}>
-                            Country <Text style={styles.introHightLight}>{user.country}</Text>
+                            Đất nước <Text style={styles.introHightLight}>{user.country}</Text>
                         </Text>
                     </View>
-                    <View style={styles.introLine}>
+                    {/* <View style={styles.introLine}>
                         <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="rss" />
                         <Text style={styles.introLineText}>
-                            Followed by <Text style={styles.introHightLight}>{user.follower} </Text>followers
+                            Theo dõi <Text style={styles.introHightLight}>{user.listing} </Text> theo dõi
                         </Text>
-                    </View>
-                    
-                    <View style={styles.introLine}>
-                        <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="ellipsis-h" />
-                        <TouchableOpacity>
-                            <Text style={styles.introLineText}>
-                                View more introductory information
-                            </Text>
-                        </TouchableOpacity>
+                    </View> */}
 
-                    </View>
                 </View>
                 <View style={{ paddingVertical: 20, borderBottomWidth: 0.5, borderBottomColor: '#ddd' }}>
                     <TouchableOpacity
                         activeOpacity={0.8}
                         style={styles.btnEditPublicDetail}
-                        onPress={() => props.navigation.navigate("EditPublicInfo", {user: user})}>
-                        <Text style={{ color: '#318bfb', fontSize: 16, fontWeight: '500' }}>Edit public info</Text>
+                        onPress={() => props.navigation.navigate("EditPublicInfo", { user: user })}>
+                        <Text style={{ color: '#318bfb', fontSize: 16, fontWeight: '500' }}>Chỉnh sửa thông tin cá nhân</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -146,7 +151,8 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 200,
         borderTopLeftRadius: 10,
-        borderTopRightRadius: 10
+        borderTopRightRadius: 10,
+        backgroundColor: "#ddd"
     },
     avatarWrapper: {
         backgroundColor: '#000',
@@ -199,7 +205,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: '500'
     },
-    introTxt: {
+    description: {
         color: 'rgba(0,0,0,0.7)',
         marginTop: 10
     },

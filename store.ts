@@ -43,11 +43,11 @@ export const clearDataStore = async () => {
 
 export const removeDataStore = async (key: string) => {
   try {
-      await AsyncStorage.removeItem(key);
-      return true;
+    await AsyncStorage.removeItem(key);
+    return true;
   }
-  catch(exception) {
-      return false;
+  catch (exception) {
+    return false;
   }
 }
 
@@ -64,12 +64,37 @@ export interface IUser {
   id: string;
   name: string;
   avatar: string;
-  email: string
+  email: string;
+}
+
+export interface IUserInfo {
+  cover_image: string;
+  avatar: string;
+  username: string;
+  subName: string;
+  description: string;
+  address: string;
+  city: string;
+  listing: string;
+  country: string;
+}
+
+export const userInfoInitData = {
+  cover_image: undefined,
+  avatar: undefined,
+  username: "",
+  subName: "",
+  description: "",
+  address: "",
+  city: "",
+  listing: "",
+  country: ""
 }
 export interface IStore {
   user: IUser;
   isLogin: boolean;
   accessToken: string;
+  userInfo: IUserInfo | null;
 }
 export const initData: IStore = {
   user: {
@@ -78,8 +103,11 @@ export const initData: IStore = {
     avatar: "",
     email: ""
   },
+
+
   isLogin: false,
-  accessToken: ""
+  accessToken: "",
+  userInfo: null
 }
 
 export const StoreContext = React.createContext<{ state: IStore, dispatch: React.Dispatch<any> }>({ state: initData, dispatch: () => null });
@@ -122,9 +150,12 @@ export const reducer = (state: IStore, action: any): IStore => {
         }
       }
       return state;
-      case "UPDATE_USER":
-        // const user = action.payload;
-        return state;
+    case "UPDATE_USER_INFO":
+      const userInfo = action.payload.userInfo;
+      return {
+        ...state,
+        userInfo
+      };
     case "LOG_OUT":
       clearDataStore().then();
       return initData;

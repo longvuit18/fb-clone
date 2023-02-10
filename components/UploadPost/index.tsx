@@ -30,6 +30,7 @@ import axios from "axios";
 import fetch, { Headers, RequestInit } from "node-fetch";
 import { getData, getDataObject, IUser, storeDataObject, removeDataStore} from '../../store';
 import LottieView from 'lottie-react-native';
+import { BASE_URL } from "../../constants";
 
 
 const MAX_SELECTED_IMAGEs = 4;
@@ -380,7 +381,7 @@ function UploadPost(props: any) {
     var uri = "";
 
     if(mode == 1){
-      uri = "http://184.169.213.180:3000/it4788/post/add_post?";
+      uri = `${BASE_URL}/post/add_post?`;
       const modal = {} as IQueryString;
       modal.token = token!;
       modal.described = (described) ? described : '';
@@ -390,7 +391,7 @@ function UploadPost(props: any) {
       
     }
     else{
-      uri = "http://184.169.213.180:3000/it4788/post/edit_post?";
+      uri = `${BASE_URL}/post/edit_post?`;
       const modalUpdate = {} as IQueryStringUpdate;
       modalUpdate.token = token!;
       modalUpdate.id = id!;

@@ -82,7 +82,7 @@ function HomeScreen(props: any) {
       const posts = await axios.post(`/post/get_list_posts?last_id=${last_id}&index=0&count=20`);
       
       const mapData = posts.data.data.posts.map((post: any) => {
-        let createdDate = new Date(Number.parseInt(post.created));
+        let createdDate = new Date(Number.parseInt((post.created * 1000).toString()));
         let now = new Date();
         let timePost = getTimeBetweenTwoDate(createdDate, now);
         let urlImage: any[] = [];
