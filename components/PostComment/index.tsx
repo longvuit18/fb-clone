@@ -165,23 +165,27 @@ function Comment(props: any) {
     })
   }
 
-  const handleLikePost = async () => {
+  const handleLikePost = () => {
+    var like = objectLike.liked;
+    var numLike = objectLike.numberLike;
+    if(!like){
+      numLike = numLike + 1;
+    }
+    else{
+      numLike = numLike - 1;
+    }
+    var object = {
+      liked: !like,
+      numberLike: numLike
+    }
+    console.log(object);
+    setObjectLike(object);
+    callServerSaveLike();
+  }
+
+  const callServerSaveLike = () => {
     try{
-      const res = await axios.post(`/like/like?id=${route.params.id}`)
-      var like = objectLike.liked;
-      var numLike = objectLike.numberLike;
-      if(!like){
-        numLike = numLike + 1;
-      }
-      else{
-        numLike = numLike - 1;
-      }
-      var object = {
-        liked: !like,
-        numberLike: numLike
-      }
-      console.log(object);
-      setObjectLike(object);
+      axios.post(`/like/like?id=${route.params.id}`)
     }
     catch(err){
       console.log(err);

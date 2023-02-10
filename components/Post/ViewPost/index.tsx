@@ -85,24 +85,28 @@ function ViewPost({ visible, handleEventShow, data, objectLike }: any) {
     setVisibleViewListImage(false);
   }
 
-  const handleLikePost = async () => {
+  const handleLikePost = () => {
+    var likeT = like.liked;
+    var numLike = like.numberLike;
+    if(!likeT){
+      numLike = numLike + 1;
+    }
+    else{
+      numLike = numLike - 1;
+    }
+    var object = {
+      liked: !likeT,
+      numberLike: numLike
+    }
+    setLike(object);
+    data.numberLike = numLike.toString();
+    data.isLiked = !likeT;
+    callServerSaveLike();
+  }
+
+  const callServerSaveLike = () => {
     try{
-      const res = await axios.post(`/like/like?id=${data.id}`)
-      var like = objectLike.liked;
-      var numLike = objectLike.numberLike;
-      if(!like){
-        numLike = numLike + 1;
-      }
-      else{
-        numLike = numLike - 1;
-      }
-      var object = {
-        liked: !like,
-        numberLike: numLike
-      }
-      setLike(object);
-      data.numberLike = numLike.toString();
-      data.isLiked = !like;
+      axios.post(`/like/like?id=${data.id}`)
     }
     catch(err){
       console.log(err);
