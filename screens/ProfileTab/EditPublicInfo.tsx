@@ -47,7 +47,7 @@ export default function EditPublicInfo({ route }: any) {
       } else {
         // user.cover_image = image.uri;
         setLocalCoverImage(image.uri);
-      } 
+      }
 
       setUserInfo({ ...user })
     }
@@ -82,7 +82,7 @@ export default function EditPublicInfo({ route }: any) {
   const saveData = async () => {
     const formData = new FormData();
     if (localAvatar) {
-      
+
       const type = localAvatar.split(".");
       const t = type[type.length - 1];
 
@@ -117,11 +117,11 @@ export default function EditPublicInfo({ route }: any) {
 
     let uri = `/user/set_user_info?`;
     const modal = {} as IQueryString;
-    modal.username =  userInfo.username;
-    modal.description = userInfo.description;
-    modal.address =  userInfo.address;
-    modal.city = userInfo.city;
-    modal.country =  userInfo.country;
+    modal.username = userInfo.username ?? "";
+    modal.description = userInfo.description ?? "";
+    modal.address = userInfo.address ?? "";
+    modal.city = userInfo.city ?? "";
+    modal.country = userInfo.country ?? "";
     modal.link = "";
     let queryString = new URLSearchParams({ ...modal }).toString();
     uri = uri + queryString;
@@ -142,7 +142,7 @@ export default function EditPublicInfo({ route }: any) {
           }
         });
       }
-      
+
       console.log(res.data.data)
       dispatch({ type: "UPDATE_USER_INFO", payload: { userInfo: res.data.data } })
       Alert.alert('Thông báo', 'Cập nhật thông tin thành công', [
@@ -175,7 +175,7 @@ export default function EditPublicInfo({ route }: any) {
   }
 
   const changeValueInput = (name: string, value: string) => {
-    setUserInfo({...userInfo, [name]: value})
+    setUserInfo({ ...userInfo, [name]: value })
   }
 
   return (
@@ -190,9 +190,9 @@ export default function EditPublicInfo({ route }: any) {
         <View style={{ ...styles.detail, paddingTop: 0 }}>
           <View style={styles.detailTitleWrapper}>
             <Text style={styles.detailTitle}>Ảnh đại diện</Text>
-            {!userInfo.avatar && <TouchableOpacity onPress={() => handleEditAvatar(0)}>
+            <TouchableOpacity onPress={() => handleEditAvatar(0)}>
               <Text style={{ fontSize: 16, color: "#318bfb" }}>Thay đổi</Text>
-            </TouchableOpacity>}
+            </TouchableOpacity>
           </View>
           <TouchableOpacity activeOpacity={0.8}>
             <Image source={{ uri: !!localAvatar ? localAvatar : userInfo.avatar }} style={styles.avatar}></Image>
@@ -201,9 +201,9 @@ export default function EditPublicInfo({ route }: any) {
         <View style={styles.detail}>
           <View style={styles.detailTitleWrapper}>
             <Text style={styles.detailTitle}>Ảnh bìa</Text>
-            {!userInfo.cover_image && <TouchableOpacity onPress={() => handleEditAvatar(1)}>
+            <TouchableOpacity onPress={() => handleEditAvatar(1)}>
               <Text style={{ fontSize: 16, color: "#318bfb" }}>Thay đổi</Text>
-            </TouchableOpacity>}
+            </TouchableOpacity>
           </View>
           <TouchableOpacity activeOpacity={0.8}>
             <Image source={{ uri: !!localCoverImage ? localCoverImage : userInfo.cover_image }} style={styles.cover}></Image>
@@ -250,7 +250,7 @@ export default function EditPublicInfo({ route }: any) {
               <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="map-marker-alt" />
               <Text style={styles.introLineText}>Thành Phố</Text>
               <TextInput
-                value={userInfo?.city  ?? ""}
+                value={userInfo?.city ?? ""}
                 placeholderTextColor="#000000"
                 onChangeText={newText => changeValueInput("city", newText)}
                 style={styles.textInput}

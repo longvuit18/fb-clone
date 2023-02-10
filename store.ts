@@ -118,6 +118,7 @@ export const reducer = (state: IStore, action: any): IStore => {
   switch (action.type) {
     case "LOGIN":
       const payload = action.payload;
+      
       const user = {
         id: payload.id,
         avatar: payload.avatar,

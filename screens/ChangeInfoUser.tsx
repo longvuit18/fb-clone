@@ -31,12 +31,18 @@ const ChangeInfoUser = ({ navigation, route }: any) => {
   const [idImage, setIdImage] = useState(0);
   const [invalid, setInvalid] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState("Lỗi!");
 
 
   const { state, dispatch } = useStore();
 
 
   const handleLogin = async () => {
+    if (!username) {
+      setInvalid(true);
+      setErrorMessage("Bạn phải nhập tên để tiếp tục");
+      return;
+    }
     try {
       const formData = new FormData();
       if (!!galleryImage?.[idImage]) {
@@ -52,18 +58,31 @@ const ChangeInfoUser = ({ navigation, route }: any) => {
 
         formData.append("avatar", rt as any);
       }
-      
+
       setInvalid(false);
       setLoading(true);
-      const res = await axios.post(`/auth/change_info_after_signup?username=${username}&token=${token}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
-      });
+
+      let res: any;
+      if (!!galleryImage?.[idImage]) {
+        res = await axios.post(`/auth/change_info_after_signup?username=${username}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: token
+          }
+        });
+      } else {
+        res = await axios.post(`/auth/change_info_after_signup?username=${username}`, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: token
+          }
+        });
+      }
+
       Alert.alert('Thông báo', 'Cập nhật thông tin cá nhân thành công!', [
-        {text: 'OK', onPress: () => dispatch({ type: "LOGIN", payload: { ...res.data?.data, token } })},
+        { text: 'OK', onPress: () => {dispatch({ type: "LOGIN", payload: { ...res.data?.data.data, token } })} },
       ]);
-      
+
 
       setLoading(false);
     } catch (error) {
@@ -164,7 +183,7 @@ const ChangeInfoUser = ({ navigation, route }: any) => {
             </View>
           </View>
           {invalid && <View>
-            <Text style={styles.validate}>Thông tin không đúng</Text>
+            <Text style={styles.validate}>{errorMessage}</Text>
 
           </View>}
           <Pressable style={styles.loginButton} disabled={loading}
