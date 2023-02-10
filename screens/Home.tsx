@@ -17,10 +17,12 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import Story from '../components/Story';
 import Post from '../components/Post';
 import axios from "axios";
-import { getData, getDataObject, IUser } from '../store';
+import {useNetInfo} from "@react-native-community/netinfo";
+import { getData, getDataObject, storeDataObject, removeDataStore, IUser } from '../store';
 
 interface IPost  {
   id: string;
+  authorId?: string,
   authorName?: string;
   urlAvatar?: string;
   timePost?: string;
@@ -34,6 +36,7 @@ interface IPost  {
   isLiked? : boolean;
   status?: string;
   canEdit? : boolean
+  isBlock? : boolean
 }
 function HomeScreen(props: any) {
   const [data, setData] = React.useState<IPost[]>([])
@@ -42,7 +45,25 @@ function HomeScreen(props: any) {
   const [isLoadMore, setIsLoadMore] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const netInfo = useNetInfo();
+  
   const getPosts = async (isLoadMore : boolean) => {
+    //Nếu mất mạng thì load cache ra
+    if(!(netInfo.isConnected || netInfo.isConnected == null)){
+      await getDataObject("listPost").then(posts => {
+        if(posts){
+          setData([...posts]);
+          setIsLoadMore(false);
+          setIsLoading(false);
+          setRefreshing(false);
+        }
+        else{
+          alert("Bạn cần kết nối internet để sử dụng!");
+        }
+      })
+
+      return;
+    }
     var userId : any;
     await getDataObject("user").then(user => {
       setUser(user);
@@ -71,9 +92,9 @@ function HomeScreen(props: any) {
             return urlImage.push(image.url)
           })
         }
-
         return ({
           id: post.id,
+          authorId: post.author.id,
           authorName: post.author.username ? post.author.username : (post.author.id == userId ? 'Me' : 'Unknow'),
           urlAvatar: post.author.avatar ? post.author.avatar : 'https://i.ibb.co/GsY7vbz/contacts-64.png',
           contentPost: post.described,
@@ -87,12 +108,16 @@ function HomeScreen(props: any) {
           isLiked: post.is_liked == "1" ? true : false,
           status: post.state,
           canEdit: post.author.id == userId ? true : false,
-        }
-        )
+          isBlock: post.is_blocked == "0" ? false : true
+        })
       })
 
+      var realData = mapData.filter((e : any, i : number) => {
+        return !e.isBlock
+      });
+
       if(isLoadMore){
-        var listPost = [...data, ...mapData];
+        var listPost = [...data, ...realData];
         const uniqueArray = listPost.filter((value, index) => {
           const _value = JSON.stringify(value);
           return index === listPost.findIndex(obj => {
@@ -104,7 +129,9 @@ function HomeScreen(props: any) {
         setIsLoading(false);
       }
       else{
-        setData(mapData);
+        setData(realData);
+        await removeDataStore("listPost");
+        await storeDataObject("listPost", realData);
       }
       setRefreshing(false);
     } catch (error) {
@@ -271,11 +298,20 @@ function HomeScreen(props: any) {
               />
             </TouchableOpacity>
             <TouchableOpacity style={{ flex: 1 }} onPress={() => 
-              props.navigation.navigate("UploadPost", 
-                {
-                  id: null, mode: 1, 
-                  onGoBack: () => {handlePullDown();}
-                })}>
+              {
+                if(!netInfo.isConnected){
+                  alert("Bạn cần kết nối internet để sử dụng!");
+                }
+                else{
+                  props.navigation.navigate("UploadPost", 
+                  {
+                    id: null, mode: 1, 
+                    onGoBack: () => {handlePullDown();}
+                  })}
+                }
+              }
+              
+              >
               <View style={styles.postBtn}>
                 <Text style={styles.text}>Bạn đang nghĩ gì?</Text>
               </View>

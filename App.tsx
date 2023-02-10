@@ -18,6 +18,7 @@ import { ActivityIndicator } from 'react-native-paper';
 import Setting from './screens/Setting';
 import Register from './screens/Register';
 import Verify from './screens/Verify';
+import Report from "./components/Report";
 
 import Profile from './screens/ProfileTab';
 import EditPublicInfo from './screens/ProfileTab/EditPublicInfo';
@@ -34,6 +35,7 @@ const HomeTab = () => {
       <Stack.Screen name="NewsFeed" component={HomeScreen} />
       <Stack.Screen name="UploadPost" component={UploadPost} />
       <Stack.Screen name="PostComment" component={PostComment} />
+      <Stack.Screen name="Report" component={Report} />
       <Stack.Screen name="Search" component={Search} />
     </Stack.Navigator>
   );
