@@ -16,7 +16,10 @@ const Verify = ({navigation, route}: any) => {
       setInvalid(false);
       setLoading(true);
       const res = await axios.post(`/auth/check_verify_code?phonenumber=${phoneNumber}&code_verify=${code}`)
-      dispatch({type: "LOGIN", payload: res.data?.data})
+      navigation.navigate("ChangeInfoUser", {
+        phoneNumber: phoneNumber, 
+        token: res.data.data.token
+      })
       setLoading(false);
     } catch (error) {
       setInvalid(true);

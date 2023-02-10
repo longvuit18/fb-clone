@@ -50,10 +50,10 @@ function GalleryImage({ visible, handleEventShow, data, numberImage, lstSelected
       setImageSelected([...tmpArray])
     }
     else{
-      if(imageSelected.length + numberImage >= 4 && screen === null){
+      if(imageSelected.length + numberImage >= 4 && screen == null){
         alert("Bạn chỉ được chọn tối đa 4 ảnh!")
       }
-      else if (screen !== null && imageSelected.length > 0) {
+      else if (screen != null && imageSelected.length > 0) {
         alert("Bạn chỉ được chọn tối đa 1 ảnh!")
       }
       else{

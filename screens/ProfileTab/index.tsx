@@ -5,7 +5,7 @@ import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 import { getData, getDataObject, IUser, useStore } from '../../store';
 import axios from "axios";
 
-export default function index(props: any) {
+export default function ProfileScreen(props: any) {
     const [user, setUser] = useState({
         cover_url: "",
         avatar_url: "",
@@ -51,14 +51,14 @@ export default function index(props: any) {
             <View style={styles.infoWrapper}>
                 <View style={styles.avatarCoverWrapper}>
                     <TouchableOpacity activeOpacity={0.8}>
-                        <Image style={styles.cover} source={{ uri: user.cover_url }} />
+                        <Image style={styles.cover} source={{ uri: !!user.cover_url ? user.cover_url : undefined }} />
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.btnChangeCover}>
                         <FontAwesome5Icon size={18} name="camera" />
                     </TouchableOpacity>
                     <View style={styles.avatarWrapper}>
                         <TouchableOpacity activeOpacity={0.9}>
-                            <Image style={styles.avatar} source={{ uri: user.avatar_url }} />
+                            <Image style={styles.avatar} source={{ uri: !!user.avatar_url ? user.avatar_url : undefined }} />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.btnChangeAvatar}>
                             <FontAwesome5Icon size={18} name="camera" />

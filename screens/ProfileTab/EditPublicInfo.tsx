@@ -168,7 +168,7 @@ export default function EditPublicInfo({ route }: any) {
             </TouchableOpacity>
           </View>
           <TouchableOpacity activeOpacity={0.8}>
-            <Image source={{ uri: userInfo.avatar_url }} style={styles.avatar}></Image>
+            <Image source={{ uri: !!userInfo.avatar_url ? userInfo.avatar_url : undefined }} style={styles.avatar}></Image>
           </TouchableOpacity>
         </View>
         <View style={styles.detail}>
@@ -179,7 +179,7 @@ export default function EditPublicInfo({ route }: any) {
             </TouchableOpacity>
           </View>
           <TouchableOpacity activeOpacity={0.8}>
-            <Image source={{ uri: userInfo.cover_url }} style={styles.cover}></Image>
+            <Image source={{ uri: !!userInfo.cover_url ? userInfo.cover_url : undefined }} style={styles.cover}></Image>
           </TouchableOpacity>
         </View>
         <View style={styles.detail}>

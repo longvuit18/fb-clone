@@ -158,7 +158,7 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
           </View>
           <TouchableOpacity
             style={{ width: 20, backgroundColor: 'transparent' }}
-            onPress={onPress}
+            onPress={() => onPress()}
             >
             <Text style={{ fontSize: 18 }}>...</Text>
           </TouchableOpacity>
@@ -167,7 +167,7 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
           <Text>
             {contentPost}
             {showSeeMore && (
-              <TouchableOpacity onPress={handleSeeMore}>
+              <TouchableOpacity onPress={() => handleSeeMore()}>
                 <Text style={{ color: '#babec5', fontWeight: "600" }}>
                   ... Xem thêm
                 </Text>
@@ -313,7 +313,7 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
             </View>
           </View>
           <View style={{ height: 40, flexDirection: 'row', paddingHorizontal: 10, borderTopWidth: 1, borderColor: '#babec5' }}>
-            <TouchableOpacity style={styles.btnOption} onPress={handleLikePost}>
+            <TouchableOpacity style={styles.btnOption} onPress={() => handleLikePost()}>
               {objectLike.liked ? (
                 <Icon
                   name="thumbs-up"
@@ -330,7 +330,7 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
 
               <Text style={{ color: objectLike.liked ? '#318bfb' : "#babec5" }}>Thích</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.btnOption, {marginRight: 15}]} onPress={handleShowComment}>
+            <TouchableOpacity style={[styles.btnOption, {marginRight: 15}]} onPress={() => handleShowComment()}>
               <Icon
                 name="comment-alt"
                 color="gray"

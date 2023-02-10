@@ -28,7 +28,7 @@ interface RSearch {
   id?: string,
   keyword?: string
 }
-export default function index(props) {
+export default function Search(props) {
   const navigation = useNavigation();
   const [recentSearchings, setRecentSearchings] = useState<RSearch[]>([])
   const { state } = useStore();

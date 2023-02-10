@@ -122,6 +122,9 @@ export const reducer = (state: IStore, action: any): IStore => {
         }
       }
       return state;
+      case "UPDATE_USER":
+        // const user = action.payload;
+        return state;
     case "LOG_OUT":
       clearDataStore().then();
       return initData;

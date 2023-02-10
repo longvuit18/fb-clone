@@ -22,6 +22,7 @@ import Verify from './screens/Verify';
 import Profile from './screens/ProfileTab';
 import EditPublicInfo from './screens/ProfileTab/EditPublicInfo';
 import Search from './screens/Search'
+import ChangeInfoUser from './screens/ChangeInfoUser';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -42,7 +43,7 @@ const HomeTab = () => {
 const ProfileTab = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Profile" component={Profile} />
+      <Stack.Screen name="ProfileTab" component={Profile} />
       <Stack.Screen name="EditPublicInfo" component={EditPublicInfo} />
     </Stack.Navigator>
   );
@@ -60,9 +61,6 @@ const BottomNavbar = () => {
       <Tab.Screen options={{ tabBarIcon: ({ color, focused }) => (<Icon name='home' size={20} color={focused ? '#318bfb' : '#ddd'}></Icon>) }}
         name="Home" component={HomeTab} />
       <Tab.Screen
-        options={{ tabBarIcon: ({ color, focused }) => (<Icon name='video' size={20} color={focused ? '#318bfb' : '#ddd'}></Icon>) }}
-        name="Watch" component={HomeScreen} />
-      <Tab.Screen
         options={{ tabBarIcon: ({ color, focused }) => (<Icon name='cog' size={22} color={focused ? '#318bfb' : '#ddd'}></Icon>) }}
         name="Setting" component={Setting} />
       <Tab.Screen
@@ -79,6 +77,7 @@ const AuthNav = () => {
       <Stack.Screen name="Login" component={Login} />
       <Stack.Screen name="Register" component={Register} />
       <Stack.Screen name="Verify" component={Verify} />
+      <Stack.Screen name="ChangeInfoUser" component={ChangeInfoUser} />
     </Stack.Navigator>
   );
 }
@@ -117,7 +116,6 @@ export default function App() {
 
   return (
     <StoreContext.Provider value={{ state, dispatch }}>
-      <StatusBar barStyle="light-content"/>
       {init ? <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Image
           style={{ marginBottom: 20 }}
