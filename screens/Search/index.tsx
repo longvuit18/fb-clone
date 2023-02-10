@@ -35,9 +35,9 @@ export default function index(props) {
   const [data, setData] = React.useState<IPost[]>([])
   const [keyword, setKeyword] = useState<string>("");
   const [deleteID, setDeleteID] = useState<string>("");
+  const [blockList, setBlockList] = useState<string[]>([]);
 
   const deleteRecentSearch = async () => {
-    console.log(deleteID);
     try {
       var requestOptions: RequestInit = {
         method: "POST",
@@ -54,6 +54,19 @@ export default function index(props) {
   const deleteFunc = (id: string) => {
     setDeleteID(id);
     deleteRecentSearch();
+  }
+  const getBlockList = async () => {
+    try {
+      const response = await axios.post(`/friend/get_list_blocks?index=0&count=10`);
+      const data = response.data.data;
+      var res = [];
+      for (var i = 0; i < data.length; i += 1) {
+        res.push(data[i]["id"]);
+      }
+      setBlockList(res);
+    } catch (error) {
+      throw error;
+    }
   }
   const getRecentSearch = async () => {
     try {
@@ -103,44 +116,50 @@ export default function index(props) {
   const searchPost = async () => {
     try {
       var uri = "/search/search?index=0&count=20&keyword=" + keyword.toString();
-      console.log(uri)
       const posts = await axios.post(uri);
       const mapData = posts.data.data.posts.map((post: any) => {
-        let createdDate = new Date(Number.parseInt(post.created));
-        let now = new Date();
-        let timePost = getTimeBetweenTwoDate(createdDate, now);
-        let urlImage: any[] = [];
-        let numberImage = post.image ? post.image.length : 0;
-        if (numberImage > 0) {
-          post.image.forEach((image: any) => {
-            return urlImage.push(image.url)
-          })
-        }
+        if (blockList.includes(post.author.id) == false) {
+          let createdDate = new Date(Number.parseInt(post.created));
+          let now = new Date();
+          let timePost = getTimeBetweenTwoDate(createdDate, now);
+          let urlImage: any[] = [];
+          let numberImage = post.image ? post.image.length : 0;
+          if (numberImage > 0) {
+            post.image.forEach((image: any) => {
+              return urlImage.push(image.url)
+            })
+          }
 
-        return ({
-          id: post.id,
-          authorName: post.author.username,
-          urlAvatar: post.author.avatar,
-          contentPost: post.described,
-          numberImage: post.image ? post.image.length : 0,
-          timePost: timePost,
-          hasVideo: false,
-          hasMedia: post.image || post.video ? true : false,
-          urlImage: urlImage,
-          numberLike: post.like,
-          textComment: post.comment + ' bình luận',
-          isLiked: post.is_liked == "1" ? true : false,
-          status: post.state,
-          canEdit: post.author.id == state.user.id ? true : false,
+          return ({
+            id: post.id,
+            authorName: post.author.username,
+            urlAvatar: post.author.avatar,
+            contentPost: post.described,
+            numberImage: post.image ? post.image.length : 0,
+            timePost: timePost,
+            hasVideo: false,
+            hasMedia: post.image || post.video ? true : false,
+            urlImage: urlImage,
+            numberLike: post.like,
+            textComment: post.comment + ' bình luận',
+            isLiked: post.is_liked == "1" ? true : false,
+            status: post.state,
+            canEdit: post.author.id == state.user.id ? true : false,
+          }
+          )
+        } else {
+          return null;
         }
-        )
-      })
+      }).filter(elements => {
+        return elements !== null;
+       });
       setData(mapData);
     } catch (error) {
       throw error;
     }
   }
   React.useEffect(() => {
+    getBlockList();
     getRecentSearch();
   }, [])
   return (
@@ -168,8 +187,8 @@ export default function index(props) {
         {data.map((post, index) => (
           <TouchableOpacity>
             {data.length !== 0
-            ? (<Post key={index} indexPost={index} data={post} navigation={props.navigation} callBackEvent={callBackEventPost} />)
-          : (<View><Text>Không có bài viết</Text></View>)}
+              ? (<Post key={index} indexPost={index} data={post} navigation={props.navigation} callBackEvent={callBackEventPost} />)
+              : (<View><Text>Không có bài viết</Text></View>)}
           </TouchableOpacity>
         ))}
         <View style={styles.titleWrapper}>
@@ -183,9 +202,9 @@ export default function index(props) {
               onPress={() => setKeyword(searching.keyword)}>
               <Text style={{ fontSize: 16, marginLeft: 10 }}>{searching.keyword}</Text>
               <View style={{ flex: 1 }}></View>
-              <AntDesign name="close" style={styles.btnClose} size={25} onPress={() => deleteFunc(searching.id)}/>
+              <AntDesign name="close" style={styles.btnClose} size={25} onPress={() => deleteFunc(searching.id)} />
             </TouchableOpacity>
-            
+
           ))}
         </View>
       </ScrollView>
