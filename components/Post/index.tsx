@@ -17,7 +17,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import PostOption from "./PostOption";
 import Comment from "./Comment";
 import ViewPost from "./ViewPost";
+//import Clipboard from '@react-native-community/clipboard';
 import axios from "axios";
+import {useNetInfo} from "@react-native-community/netinfo";
 
 function Post({indexPost, data, navigation, callBackEvent }: any) {
   const [visibleOption, setVisibleOption] = useState(false);
@@ -51,6 +53,8 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
     numberLike: Number.parseInt(data.numberLike)
   })
 
+  const netInfo = useNetInfo();
+
   const onPress = () => {
     setVisibleOption(true);
   }
@@ -74,6 +78,10 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
   }
 
   const handleShowComment = () => {
+    if(!netInfo.isConnected){
+      alert("Bạn cần kết nối internet để sử dụng!");
+      return;
+    }
     navigation.navigate("PostComment", 
     {
       id: data.id, 
@@ -83,6 +91,11 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
   }
 
   const handleCallBackOption = (type : number) => {
+    if(!netInfo.isConnected){
+      alert("Bạn cần kết nối internet để sử dụng!");
+      return;
+    }
+    
     if(type == 0){
       Alert.alert('Cảnh báo', 'Bài viết sẽ bị xoá vĩnh viễn. Bạn có chắc chắn muốn xoá?', [
         {
@@ -92,8 +105,11 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
         {text: 'Tiếp tục', onPress: () => handleDeletePost()},
       ]);
     }
-    else{
+    else if(type == 1){
       navigation.navigate("UploadPost", {id: data.id, mode: 2})
+    }
+    else if(type == 2){
+      navigation.navigate("Report", {id: data.id, name: data.authorName, userID: data.authorId})
     }
   }
 
@@ -108,6 +124,10 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
   }
 
   const handleLikePost = async () => {
+    if(!netInfo.isConnected){
+      alert("Bạn cần kết nối internet để sử dụng!");
+      return;
+    }
     try{
       const res = await axios.post(`/like/like?id=${data.id}`)
       var like = objectLike.liked;
@@ -130,6 +150,10 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
       console.log(err);
     }
   }
+
+  // const copyContent = () => {
+  //   Clipboard.setString(data.contentPost);
+  // }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -158,16 +182,16 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
           </View>
           <TouchableOpacity
             style={{ width: 20, backgroundColor: 'transparent' }}
-            onPress={() => onPress()}
+            onPress={onPress}
             >
             <Text style={{ fontSize: 18 }}>...</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.content}>
-          <Text>
+          <Text selectable={true}>
             {contentPost}
             {showSeeMore && (
-              <TouchableOpacity onPress={() => handleSeeMore()}>
+              <TouchableOpacity onPress={handleSeeMore}>
                 <Text style={{ color: '#babec5', fontWeight: "600" }}>
                   ... Xem thêm
                 </Text>
@@ -177,7 +201,15 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
           </Text>
         </View>
         {data.hasMedia && (
-          <TouchableOpacity style={styles.layout} onPress={()=>{setVisibleViewPost(true)}}>
+          <TouchableOpacity style={styles.layout} onPress={()=>
+            {
+              if(!netInfo.isConnected){
+                alert("Bạn cần kết nối internet để sử dụng!");
+                return;
+              }
+              setVisibleViewPost(true)
+            }}
+          >
             {data.numberImage == 1 && (
               <View style={styles.oneImage}>
                 <ImageBackground
@@ -305,7 +337,13 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
               color="#318bfb"
               // backgroundColor="white"
               style={{ marginRight: 5 }}></Icon>
-            <Text style={{ color: '#babec5' }}>{objectLike.numberLike}</Text>
+            <Text style={{ color: '#babec5' }}>
+              {objectLike.liked ? 
+                (objectLike.numberLike - 1) == 0 ? objectLike.numberLike : 
+                "Bạn và " + (objectLike.numberLike - 1) + " người khác"
+                : objectLike.numberLike
+              }
+            </Text>
             <View style={{ display: 'flex', flex: 1 }}>
               <Text style={{ color: '#babec5', textAlign: 'right' }}>
                 {data.textComment}
@@ -313,7 +351,7 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
             </View>
           </View>
           <View style={{ height: 40, flexDirection: 'row', paddingHorizontal: 10, borderTopWidth: 1, borderColor: '#babec5' }}>
-            <TouchableOpacity style={styles.btnOption} onPress={() => handleLikePost()}>
+            <TouchableOpacity style={styles.btnOption} onPress={handleLikePost}>
               {objectLike.liked ? (
                 <Icon
                   name="thumbs-up"
@@ -330,7 +368,7 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
 
               <Text style={{ color: objectLike.liked ? '#318bfb' : "#babec5" }}>Thích</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.btnOption, {marginRight: 15}]} onPress={() => handleShowComment()}>
+            <TouchableOpacity style={[styles.btnOption, {marginRight: 15}]} onPress={handleShowComment}>
               <Icon
                 name="comment-alt"
                 color="gray"

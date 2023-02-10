@@ -27,6 +27,7 @@ const windowWidth = Dimensions.get('window').width;
 function GalleryImage({ visible, handleEventShow, data, numberImage, lstSelected, callBackEvent, screen, type_image }: any) {
   const [modalVisible, setModalVisible] = useState(visible);
   const [imageSelected, setImageSelected] = useState<number[]>(lstSelected);
+  const [uploadActive, setUploadActive] = useState<boolean>(false);
 
   const hiddenModal = () => {
     setModalVisible(false);
@@ -35,14 +36,19 @@ function GalleryImage({ visible, handleEventShow, data, numberImage, lstSelected
 
   useEffect(() => {
     setModalVisible(visible);
-  }, [visible]);
+    if(imageSelected.length > 0){
+      setUploadActive(true);
+    }
+    else{
+      setUploadActive(false);
+    }
+  }, [visible, imageSelected]);
 
   useEffect(() => {
     setImageSelected(lstSelected);
   }, [lstSelected]);
 
   const handleSelectedImage = (selected : boolean, index : number) => {
-    console.log(numberImage);
     if(selected){
       var indexList = imageSelected.indexOf(index);
       var tmpArray = imageSelected;
@@ -118,9 +124,14 @@ function GalleryImage({ visible, handleEventShow, data, numberImage, lstSelected
                   />
                 </TouchableOpacity>
                 <View style={{ flex: 1 }}></View>
-                <TouchableOpacity style={[styles.btnPost, styles.btnPostActive]} onPress={handleUploadImage}>
-                  <Text>Upload</Text>
-                </TouchableOpacity>
+                {uploadActive ?
+                  (<TouchableOpacity style={[styles.btnPost, styles.btnPostActive]} onPress={handleUploadImage}>
+                      <Text>Upload</Text>
+                  </TouchableOpacity>)
+                  : (<View style={[styles.btnPost]} >
+                      <Text style={[ styles.txtBtnActive]}>Upload</Text>
+                  </View>)
+                  }
             </View>
             <FlatList
               style={styles.listImage}
@@ -194,6 +205,10 @@ const styles = StyleSheet.create({
   chooseImageChecked:{
     backgroundColor: "#528eef",
     borderWidth: 0,
+  },
+  txtBtnActive: {
+    color: "#fff",
+    fontWeight: "600",
   }
 });
 

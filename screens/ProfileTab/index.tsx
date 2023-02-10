@@ -5,7 +5,7 @@ import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 import { getData, getDataObject, IUser, useStore } from '../../store';
 import axios from "axios";
 
-export default function ProfileScreen(props: any) {
+export default function index(props: any) {
     const [user, setUser] = useState({
         cover_url: "",
         avatar_url: "",
@@ -14,8 +14,8 @@ export default function ProfileScreen(props: any) {
         introTxt: "",
         live_in: "",
         from: "",
-        relationship: "",
         follower: "",
+        country: ""
     })
 
     const { state } = useStore();
@@ -34,8 +34,8 @@ export default function ProfileScreen(props: any) {
                 introTxt: mapUser?.description ?? "",
                 live_in: mapUser?.address ?? "",
                 from: mapUser?.city ?? "",
-                relationship: "",
                 follower: mapUser?.listing ?? "",
+                country: mapUser?.country ?? "",
             })
 
             setUser(mapData);
@@ -51,14 +51,14 @@ export default function ProfileScreen(props: any) {
             <View style={styles.infoWrapper}>
                 <View style={styles.avatarCoverWrapper}>
                     <TouchableOpacity activeOpacity={0.8}>
-                        <Image style={styles.cover} source={{ uri: !!user.cover_url ? user.cover_url : undefined }} />
+                        <Image style={styles.cover} source={{ uri: user.cover_url }} />
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.btnChangeCover}>
                         <FontAwesome5Icon size={18} name="camera" />
                     </TouchableOpacity>
                     <View style={styles.avatarWrapper}>
                         <TouchableOpacity activeOpacity={0.9}>
-                            <Image style={styles.avatar} source={{ uri: !!user.avatar_url ? user.avatar_url : undefined }} />
+                            <Image style={styles.avatar} source={{ uri: user.avatar_url }} />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.btnChangeAvatar}>
                             <FontAwesome5Icon size={18} name="camera" />
@@ -93,9 +93,9 @@ export default function ProfileScreen(props: any) {
                         </Text>
                     </View>
                     <View style={styles.introLine}>
-                        <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="heart" />
+                        <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="globe" />
                         <Text style={styles.introLineText}>
-                            Relationship <Text style={styles.introHightLight}>{user.relationship}</Text>
+                            Country <Text style={styles.introHightLight}>{user.country}</Text>
                         </Text>
                     </View>
                     <View style={styles.introLine}>
