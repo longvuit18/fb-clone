@@ -54,7 +54,7 @@ function Comment(props: any) {
       await axios.post("/comment/get_comment?id="+id+"&index="+index+"&count=20")
       .then((comments)=>{
         const mapData = comments.data.data.map((comment: any) => {
-          let createdDate = new Date(Number.parseInt(comment.created));
+          let createdDate = new Date(Number.parseInt((comment.created * 1000).toString()));
           let now = new Date();
           let timePost = getTimeBetweenTwoDate(createdDate, now);
           let content = comment.comment;
@@ -137,7 +137,7 @@ function Comment(props: any) {
     await axios.post("/comment/set_comment?id="+id+"&comment="+contentComment+"&index=0&count=20")
     .then((comments)=>{
       const mapData = comments.data.data.map((comment: any) => {
-        let createdDate = new Date(Number.parseInt(comment.created));
+        let createdDate = new Date(Number.parseInt((comment.created * 1000).toString()));
         let now = new Date();
         let timePost = getTimeBetweenTwoDate(createdDate, now);
         let content = comment.comment;
