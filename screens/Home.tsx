@@ -50,7 +50,7 @@ function HomeScreen(props: any) {
   const getPosts = async (isLoadMore : boolean) => {
     //Nếu mất mạng thì load cache ra
     if(!(netInfo.isConnected || netInfo.isConnected == null)){
-      await getDataObject("newPost").then(posts => {
+      await getDataObject("listPost").then(posts => {
         if(posts){
           setData([...posts]);
           setIsLoadMore(false);
@@ -130,8 +130,8 @@ function HomeScreen(props: any) {
       }
       else{
         setData(realData);
-        await removeDataStore("newPost");
-        await storeDataObject("newPost", realData);
+        await removeDataStore("listPost");
+        await storeDataObject("listPost", realData);
       }
       setRefreshing(false);
     } catch (error) {

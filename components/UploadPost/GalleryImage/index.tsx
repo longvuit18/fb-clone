@@ -49,7 +49,6 @@ function GalleryImage({ visible, handleEventShow, data, numberImage, lstSelected
   }, [lstSelected]);
 
   const handleSelectedImage = (selected : boolean, index : number) => {
-    console.log(numberImage);
     if(selected){
       var indexList = imageSelected.indexOf(index);
       var tmpArray = imageSelected;
