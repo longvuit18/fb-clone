@@ -18,7 +18,7 @@ import Story from '../components/Story';
 import Post from '../components/Post';
 import axios from "axios";
 import {useNetInfo} from "@react-native-community/netinfo";
-import { getData, getDataObject, storeDataObject, removeDataStore, IUser } from '../store';
+import { getData, useStore, getDataObject, storeDataObject, removeDataStore, IUser } from '../store';
 
 interface IPost  {
   id: string;
@@ -39,8 +39,9 @@ interface IPost  {
   isBlock? : boolean
 }
 function HomeScreen(props: any) {
+  const { state, dispatch } = useStore();
   const [data, setData] = React.useState<IPost[]>([])
-  const [user, setUser] = useState<IUser>()
+  const [user, setUser] = useState<IUser>(state.user)
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [isLoadMore, setIsLoadMore] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -64,11 +65,7 @@ function HomeScreen(props: any) {
 
       return;
     }
-    var userId : any;
-    await getDataObject("user").then(user => {
-      setUser(user);
-      userId = user.id;
-    })
+    var userId = state.user.id;
 
     let last_id = "0";
     if(!refreshing && isLoadMore){
@@ -164,7 +161,7 @@ function HomeScreen(props: any) {
     }
   }
 
-  const callBackEventPost = (index: number) => {
+  const callBackEventPost = (index: any) => {
     var tempData = data;
     tempData.splice(index, 1);
     //Chả hiểu sao nó lại không ăn render. nên phải xoá hết đi rồi mới vẽ lại
@@ -290,7 +287,7 @@ function HomeScreen(props: any) {
           </View> 
           <View></View>
           <View style={styles.avatarContainer}>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => {props.navigation.navigate("ProfileTab")}}>
               <Image
                 resizeMode="cover"
                 style={styles.avatar}
