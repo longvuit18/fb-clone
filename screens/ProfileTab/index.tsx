@@ -5,6 +5,24 @@ import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 import { getData, getDataObject, IUser, useStore, storeDataObject, removeDataStore } from '../../store';
 import axios from "axios";
 import LottieView from 'lottie-react-native';
+import Post from '../../components/Post'
+
+interface IPost {
+    id?: string;
+    authorName?: string;
+    urlAvatar?: string;
+    timePost?: string;
+    contentPost?: string;
+    numberImage?: string;
+    hasVideo?: boolean;
+    hasMedia?: boolean;
+    urlImage?: object;
+    numberLike?: object;
+    textComment?: string;
+    isLiked?: boolean;
+    status?: string;
+    canEdit?: boolean
+}
 
 export default function Profile(props: any) {
     const { navigation, route } = props;
@@ -21,8 +39,83 @@ export default function Profile(props: any) {
     })
     const [loader, setLoader] = useState<boolean>(false);
     const [refreshing, setRefreshing] = useState<boolean>(false);
+    const [data, setData] = React.useState<IPost[]>([])
     const { state, dispatch } = useStore();
     const authorId = route.params ? (route.params.authorId ? route.params.authorId: null) : null;
+
+    const getTimeBetweenTwoDate = (firstDate: Date, secondDate: Date) => {
+        const seconds = (secondDate.getTime() - firstDate.getTime()) / 1000;
+        if (seconds < 60) {
+            return "Vừa xong";
+        }
+        else if (seconds < 3600) {
+            let minutes = Math.ceil(seconds / 60);
+            return minutes + " phút";
+        }
+        else if (seconds < 86400) {
+            let hours = Math.ceil(seconds / 3600);
+            return hours + " giờ";
+        }
+        else if (seconds < 432000) {
+            let days = Math.ceil(seconds / 86400);
+            return days + " ngày";
+        }
+        else {
+            return firstDate.getDate() + " thg " + (firstDate.getMonth() + 1) + ", " + firstDate.getUTCFullYear()
+        }
+    }
+    const getPost = async () => {
+        try {
+            var id = state.user.id;
+            if(!isMe){
+                id = authorId
+            }
+            var uri = "/search/search?index=0&count=20&keyword=b"
+            const posts = await axios.post(uri);
+            console.log(posts)
+            const mapData = posts.data.data.map((post: any) => {
+                if (post.author.id == id) {
+                    let createdDate = new Date(Number.parseInt((post.created * 1000).toString()));
+                    let now = new Date();
+                    let timePost = getTimeBetweenTwoDate(createdDate, now);
+                    let urlImage: any[] = [];
+                    let numberImage = post.image ? post.image.length : 0;
+                    if (numberImage > 0) {
+                        post.image.forEach((image: any) => {
+                            return urlImage.push(image)
+                        })
+                    }
+
+                    return ({
+                        id: post.id,
+                        authorName: post.author.username,
+                        urlAvatar: post.author.avatar,
+                        contentPost: post.described,
+                        numberImage: post.image ? post.image.length : 0,
+                        timePost: timePost,
+                        hasVideo: false,
+                        hasMedia: post.image || post.video ? true : false,
+                        urlImage: urlImage,
+                        numberLike: post.like,
+                        textComment: post.comment + ' bình luận',
+                        isLiked: post.is_liked == "1" ? true : false,
+                        status: post.state,
+                        canEdit: post.author.id == state.user.id ? true : false,
+                    }
+                    )
+                } else {
+                    return null;
+                }
+            }).filter(elements => {
+                return elements !== null;
+            });
+            setData(mapData);
+        } catch (error) {
+            //console.error(error.response.data)
+            throw error;
+        }
+    }
+
     console.log(authorId)
     const isMe = (authorId == state.user.id || authorId == null);
     const [isRequest, setIsRequest] = useState<boolean>(false)
@@ -31,6 +124,7 @@ export default function Profile(props: any) {
     useEffect(() => {
         getCacheRequest();
         getProfile();
+        getPost();
     }, [authorId])
 
     const getCacheRequest = async () => {
@@ -48,9 +142,7 @@ export default function Profile(props: any) {
     const handlePullDown = () => {
         setRefreshing(true);
         getProfile();
-        
     }
-
     const getProfile = async () => {
         try {
             var id = state.user.id;
@@ -119,6 +211,13 @@ export default function Profile(props: any) {
             setLoader(false);
             alert("Có lỗi xảy ra! Vui lòng thử lại")
         })
+    }
+    const callBackEventPost = (index: number) => {
+        var tempData = data;
+        tempData.splice(index, 1);
+        //Chả hiểu sao nó lại không ăn render. nên phải xoá hết đi rồi mới vẽ lại
+        setData([]);
+        setData([...tempData]);
     }
 
     return (
@@ -224,6 +323,13 @@ export default function Profile(props: any) {
                     
                 </View>
             </View>
+            {data.map((post, index) => (
+                    <TouchableOpacity key={"post" + index}>
+                        {data.length !== 0
+                            ? (<Post indexPost={index} data={post} navigation={props.navigation} callBackEvent={callBackEventPost} />)
+                            : (<View><Text>Không có bài viết</Text></View>)}
+                    </TouchableOpacity>
+                ))}
             {loader && <LottieView source={require('../../assets/icon/loader2.json')} autoPlay loop />}
         </ScrollView>
     )
@@ -273,6 +379,18 @@ const styles = StyleSheet.create({
         bottom: 90 + 10,
         right: 10
 
+    },
+    resultWrapper: {
+        height: SCREEN_HEIGHT - STATUSBAR_HEIGHT - 50 - 48
+    },
+    titleWrapper: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 15,
+        height: 36,
+        alignItems: 'center',
+        borderBottomColor: '#ddd',
+        borderBottomWidth: 1,
     },
     btnChangeAvatar: {
         position: 'absolute',

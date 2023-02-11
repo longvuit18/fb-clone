@@ -36,6 +36,7 @@ export default function Search(props) {
   const [keyword, setKeyword] = useState<string>("");
   const [deleteID, setDeleteID] = useState<string>("");
   const [blockList, setBlockList] = useState<string[]>([]);
+  const [isNull, setIsNull] = useState<boolean>(true);
 
   const deleteRecentSearch = async () => {
     try {
@@ -55,19 +56,20 @@ export default function Search(props) {
     setDeleteID(id);
     deleteRecentSearch();
   }
-  // const getBlockList = async () => {
-  //   try {
-  //     const response = await axios.post(`/friend/get_list_blocks?index=0&count=10`);
-  //     const data = response.data.data;
-  //     var res = [];
-  //     for (var i = 0; i < data.length; i += 1) {
-  //       res.push(data[i]["id"]);
-  //     }
-  //     setBlockList(res);
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
+  const getBlockList = async () => {
+    try {
+      const response = await axios.post(`/friend/get_list_blocks?index=0&count=10`);
+      const data = response.data.data;
+      var res = [];
+      for (var i = 0; i < data.length; i += 1) {
+        res.push(data[i]["id"]);
+      }
+      setBlockList(res);
+    } catch (error) {
+      setBlockList([]);
+      console.log(error)
+    }
+  }
   const getRecentSearch = async () => {
     try {
       const recent = await axios.post(`/search/get_saved_search?index=0&count=10`);
@@ -114,10 +116,10 @@ export default function Search(props) {
     setData([...tempData]);
   }
   const searchPost = async () => {
+    console.log(keyword)
     try {
       var uri = "/search/search?index=0&count=20&keyword=" + keyword.toString();
       const posts = await axios.post(uri);
-      console.log(posts)
       const mapData = posts.data.data.map((post: any) => {
         if (blockList.includes(post.author.id) == false) {
           let createdDate = new Date(Number.parseInt((post.created * 1000).toString()));
@@ -155,8 +157,10 @@ export default function Search(props) {
         return elements !== null;
        });
       setData(mapData);
+      setIsNull(false);
     } catch (error) {
-      //console.error(error.response.data)
+      setData([]);
+      setIsNull(true);
       throw error;
     }
   }
@@ -164,6 +168,10 @@ export default function Search(props) {
     // getBlockList();
     getRecentSearch();
   }, [])
+  const handleRecentSearch = (text) => {
+    setKeyword(text);
+    searchPost();
+  }
   return (
     <View style={styles.container}>
       <View style={styles.searchToolWrapper}>
@@ -173,24 +181,16 @@ export default function Search(props) {
         <TextInput onBlur={searchPost} onChangeText={(keyword) => setKeyword(keyword)} style={styles.searchInput} placeholder="Search..." placeholderTextColor="#333" />
       </View>
       <ScrollView
-        bounces={false}
-        horizontal={true}
-        showsHorizontalScrollIndicator={false}
-        style={styles.categories}>
-        <TouchableOpacity
-          style={{ ...styles.btnCategory, backgroundColor: '#318bfb' }}>
-          <Text style={{ fontSize: 14, fontWeight: '500', color: '#fff' }}>POST</Text>
-        </TouchableOpacity>
-      </ScrollView>
-      <ScrollView
         // ref="_scrollRef"
         style={{ ...styles.resultWrapper, height: SCREEN_HEIGHT - STATUSBAR_HEIGHT - 50 - 48 }}
         bounces={false}>
         {data.map((post, index) => (
-          <TouchableOpacity key={"post" + index}>
-            {data.length !== 0
-              ? (<Post  indexPost={index} data={post} navigation={props.navigation} callBackEvent={callBackEventPost} />)
-              : (<View><Text>Không có bài viết</Text></View>)}
+          <TouchableOpacity>
+            {isNull != true
+              ? <TouchableOpacity key={"post" + index}><Post  indexPost={index} data={post} navigation={props.navigation} callBackEvent={callBackEventPost} /></TouchableOpacity>
+              : <View style={styles.titleWrapper}>
+              <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Khoong cos bai viet</Text>
+            </View>}
           </TouchableOpacity>
         ))}
         <View style={styles.titleWrapper}>
@@ -201,7 +201,7 @@ export default function Search(props) {
             <TouchableOpacity
               key={index}
               style={styles.recentSearchItem}
-              onPress={() => setKeyword(searching.keyword)}>
+              onPress={() => handleRecentSearch(searching.keyword)}>
               <Text style={{ fontSize: 16, marginLeft: 10 }}>{searching.keyword}</Text>
               <View style={{ flex: 1 }}></View>
               <AntDesign name="close" style={styles.btnClose} size={25} onPress={() => deleteFunc(searching.id)} />
