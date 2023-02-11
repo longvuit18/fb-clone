@@ -213,12 +213,15 @@ export default function Profile(props: any) {
 
                 </View>
                 <View style={{ paddingVertical: 20, borderBottomWidth: 0.5, borderBottomColor: '#ddd' }}>
-                    <TouchableOpacity
-                        activeOpacity={0.8}
-                        style={styles.btnEditPublicDetail}
-                        onPress={() => props.navigation.navigate("EditPublicInfo", { user: user })}>
-                        <Text style={{ color: '#318bfb', fontSize: 16, fontWeight: '500' }}>Chỉnh sửa thông tin cá nhân</Text>
-                    </TouchableOpacity>
+                    {isMe && 
+                        <TouchableOpacity
+                            activeOpacity={0.8}
+                            style={styles.btnEditPublicDetail}
+                            onPress={() => props.navigation.navigate("EditPublicInfo", { user: user })}>
+                            <Text style={{ color: '#318bfb', fontSize: 16, fontWeight: '500' }}>Chỉnh sửa thông tin cá nhân</Text>
+                        </TouchableOpacity>
+                    }
+                    
                 </View>
             </View>
             {loader && <LottieView source={require('../../assets/icon/loader2.json')} autoPlay loop />}
