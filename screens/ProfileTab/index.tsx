@@ -40,6 +40,9 @@ export default function Profile(props: any) {
     const [loader, setLoader] = useState<boolean>(false);
     const [refreshing, setRefreshing] = useState<boolean>(false);
     const [data, setData] = React.useState<IPost[]>([])
+    const { state, dispatch } = useStore();
+    const authorId = route.params ? (route.params.authorId ? route.params.authorId: null) : null;
+
     const getTimeBetweenTwoDate = (firstDate: Date, secondDate: Date) => {
         const seconds = (secondDate.getTime() - firstDate.getTime()) / 1000;
         if (seconds < 60) {
@@ -63,11 +66,15 @@ export default function Profile(props: any) {
     }
     const getPost = async () => {
         try {
+            var id = state.user.id;
+            if(!isMe){
+                id = authorId
+            }
             var uri = "/search/search?index=0&count=20&keyword=b"
             const posts = await axios.post(uri);
             console.log(posts)
             const mapData = posts.data.data.map((post: any) => {
-                if (post.author.id == state.user.id) {
+                if (post.author.id == id) {
                     let createdDate = new Date(Number.parseInt((post.created * 1000).toString()));
                     let now = new Date();
                     let timePost = getTimeBetweenTwoDate(createdDate, now);
@@ -109,8 +116,6 @@ export default function Profile(props: any) {
         }
     }
 
-    const { state, dispatch } = useStore();
-    const authorId = route.params ? (route.params.authorId ? route.params.authorId: null) : null;
     console.log(authorId)
     const isMe = (authorId == state.user.id || authorId == null);
     const [isRequest, setIsRequest] = useState<boolean>(false)
