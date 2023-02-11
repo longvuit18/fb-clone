@@ -9,7 +9,8 @@ import {
   FlatList, 
   TouchableOpacity,
   StatusBar,
-  ActivityIndicator 
+  ActivityIndicator,
+  RefreshControl 
 } from 'react-native';
 import { useStore, removeDataStore, storeDataObject, getDataObject } from '../../store';
 import axios from "axios";
@@ -21,6 +22,7 @@ export default function Friend(props) {
   const [lstAccept, setLstAccept] = useState<number[]>([]);
   const [lstDenie, setLstDenie] = useState<number[]>([])
   const { state, dispatch } = useStore();
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
   useEffect(() => {
     getRequestData(0);
@@ -43,13 +45,22 @@ export default function Friend(props) {
       var data = res.data.data.request;
       setListRequested([...lstRequested, ...data]);
       setIsLoading(false);
+      setRefreshing(false);
     })
     .catch(err=>{
       console.log(err);
       setIsLoading(false);
+      setRefreshing(false);
       //alert("Có lỗi xảy ra! Vui lòng thử lại");
     })
     
+  }
+
+  const handlePullDown = () => {
+    setRefreshing(true);
+    setCurIndex(0);
+    setListRequested([])
+    getRequestData(0);
   }
 
   const handleAccept = async (accept: boolean, userId: any, index: number) => {
@@ -193,6 +204,12 @@ const getTimeBetweenTwoDate = (firstDate : Date, secondDate: Date) => {
               renderItem={renderItemRequested}
               keyExtractor={(item : any, index: number) => index.toString()}
               onEndReached={handleScrollEndList}
+              refreshControl={
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handlePullDown}
+                />
+              }
             />
         </View>
         {isLoading && <ActivityIndicator size="large" color='#babec5' />}
