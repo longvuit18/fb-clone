@@ -159,6 +159,9 @@ export const reducer = (state: IStore, action: any): IStore => {
       };
     case "LOG_OUT":
       clearDataStore().then();
+      axios.defaults.params = {
+        token: ""
+      }
       return initData;
     default:
       return state;
