@@ -64,10 +64,9 @@ const ChangeInfoUser = ({ navigation, route }: any) => {
 
       let res: any;
       if (!!galleryImage?.[idImage]) {
-        res = await axios.post(`/auth/change_info_after_signup?username=${username}`, formData, {
+        res = await axios.post(`/auth/change_info_after_signup?username=${username}&token=${token}`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
-            Authorization: token
           }
         });
       } else {
