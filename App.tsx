@@ -39,6 +39,7 @@ const HomeTab = () => {
       <Stack.Screen name="UploadPost" component={UploadPost} />
       <Stack.Screen name="PostComment" component={PostComment} />
       <Stack.Screen name="Search" component={Search} />
+      <Stack.Screen name="ProfileTab" component={Profile} />
     </Stack.Navigator>
   );
 }

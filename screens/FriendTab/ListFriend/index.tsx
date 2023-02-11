@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Pressable, 
   SafeAreaView,
@@ -11,33 +11,56 @@ import {
   StatusBar,
   ImageBackground 
 } from 'react-native';
-import { useStore } from '../../../store';
+import { getData, getDataObject, IUser, useStore, storeDataObject, removeDataStore } from '../../../store';
+import axios from "axios";
 
 export default function ListFriend(props) {
-  const { dispatch } = useStore();
-  const [total, setTotal] = useState<any>(150);
-  const [lstRequested, setListRequested] = useState<object[]>([
-    {id: "11111", username: "Tesst", avatar: 'https://i.ibb.co/GsY7vbz/contacts-64.png', created: 1676090550306},
-    {id: "11111", username: "Tesst", avatar: 'https://i.ibb.co/GsY7vbz/contacts-64.png', created: 1676090550306}
-  ])
-  const renderItemRequested = ({item, index} : any) => {
-    return (
-      <View style={{flexDirection: "row", marginVertical: 8, flex: 1, alignItems: "center"}}>
-        <Image
-            source={{uri: item.avatar}}
-            style={{ width: 45, height: 45, borderRadius: 50, marginRight: 10 }}
-            resizeMode={"cover"}
-        />
-        <Text>{item.username}</Text>
-        
-      </View>
+  const [total, setTotal] = useState<any>(0);
+  const [lstRequested, setListRequested] = useState<object[]>([])
+  const [curIndex, setCurIndex] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { state, dispatch } = useStore();
 
-    )
-}
+    const renderItemRequested = ({item, index} : any) => {
+        return (
+            <View style={{flexDirection: "row", marginVertical: 8, flex: 1, alignItems: "center"}}>
+                <Image
+                    source={{uri: item.avatar}}
+                    style={{ width: 45, height: 45, borderRadius: 50, marginRight: 10 }}
+                    resizeMode={"cover"}
+                />
+                <Text>{item.username}</Text>
+                
+            </View>
 
-const handleBack = () => {
-    props.navigation.goBack()
-}
+        )
+    }
+
+    useEffect(() => {
+        getRequestData(0);
+
+    }, [])
+
+    const getRequestData = async (index: number) => {
+        console.log(state.user.id)
+        var url = `/friend/get_user_friends?user_id=${state.user.id}&index=${index}&count=10`;
+        await axios.post(url)
+        .then(res => {
+            console.log(res.data.data)
+        var data = res.data.data.list_users;
+        setListRequested([...lstRequested, ...data]);
+        setIsLoading(false);
+        })
+        .catch(err=>{
+        console.log(err);
+        setIsLoading(false);
+        alert("Có lỗi xảy ra! Vui lòng thử lại");
+        })
+    }
+
+    const handleBack = () => {
+        props.navigation.goBack()
+    }
 
 
   return (
@@ -109,6 +132,7 @@ const styles = StyleSheet.create({
   },
 
   listItem:{
+    marginBottom: 50
   },
   btnAction: {
     backgroundColor: "#babec5",

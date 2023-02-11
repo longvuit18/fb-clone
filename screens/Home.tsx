@@ -287,7 +287,7 @@ function HomeScreen(props: any) {
           </View> 
           <View></View>
           <View style={styles.avatarContainer}>
-            <TouchableOpacity onPress={() => {props.navigation.navigate("Profile")}}>
+            <TouchableOpacity onPress={() => {props.navigation.navigate("ProfileTab")}}>
               <Image
                 resizeMode="cover"
                 style={styles.avatar}

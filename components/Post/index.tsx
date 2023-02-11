@@ -156,7 +156,7 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
   }
 
   const handleGoToProfile = () => {
-    navigation.navigate("Profile", {authorId: data.authorId})
+    navigation.navigate("ProfileTab", {authorId: data.authorId})
   }
 
   // const copyContent = () => {

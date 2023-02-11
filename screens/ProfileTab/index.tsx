@@ -1,11 +1,13 @@
 import React, { useEffect, PureComponent, useState } from 'react'
-import { Text, StyleSheet, View, Image, TouchableOpacity, ScrollView } from 'react-native'
+import { Text, StyleSheet, View, Image, TouchableOpacity, ScrollView, RefreshControl } from 'react-native'
 import { SCREEN_WIDTH, SCREEN_HEIGHT, STATUSBAR_HEIGHT } from '../../constants'
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
-import { getData, getDataObject, IUser, useStore } from '../../store';
+import { getData, getDataObject, IUser, useStore, storeDataObject, removeDataStore } from '../../store';
 import axios from "axios";
+import LottieView from 'lottie-react-native';
 
 export default function Profile(props: any) {
+    const { navigation, route } = props;
     const [user, setUser] = useState({
         cover_image: undefined,
         avatar: undefined,
@@ -15,21 +17,47 @@ export default function Profile(props: any) {
         address: "",
         city: "",
         listing: "",
-        country: ""
+        country: "",
     })
-
+    const [loader, setLoader] = useState<boolean>(false);
+    const [refreshing, setRefreshing] = useState<boolean>(false);
     const { state, dispatch } = useStore();
-    useEffect(() => {
-        getProfile();
-    }, [])
-    const getProfile = async () => {
+    const authorId = route.params ? (route.params.authorId ? route.params.authorId: null) : null;
+    console.log(authorId)
+    const isMe = (authorId == state.user.id || authorId == null);
+    const [isRequest, setIsRequest] = useState<boolean>(false)
 
-        if (state.userInfo) {
-            setUser({ ...user, ...state.userInfo });
-            return;
+    const [isFriend, setIsFriend] = useState<boolean>(false);
+    useEffect(() => {
+        getCacheRequest();
+        getProfile();
+    }, [authorId])
+
+    const getCacheRequest = async () => {
+        var key =  `requestFriend_${authorId}_${state.user.id}`;
+        var obj = await getDataObject(key)
+        if(obj){
+            setIsRequest(true);
         }
+        else{
+            setIsRequest(false);
+        }
+        
+    }
+
+    const handlePullDown = () => {
+        setRefreshing(true);
+        getProfile();
+        
+    }
+
+    const getProfile = async () => {
         try {
-            const res = await axios.post(`/user/get_user_info?user_id=${state.user.id}`)
+            var id = state.user.id;
+            if(!isMe){
+                id = authorId
+            }
+            const res = await axios.post(`/user/get_user_info?user_id=${id}`)
             const mapUser = res.data.data
             const mapData = ({
                 cover_image: mapUser?.cover_image ?? undefined,
@@ -44,13 +72,15 @@ export default function Profile(props: any) {
             })
 
             setUser(mapData);
-            console.log(mapUser)
+            var friend = mapUser.is_friend == "true";
+            setIsFriend(friend);
             dispatch({ type: "UPDATE_USER_INFO", payload: { userInfo: mapData } })
-
+            setRefreshing(false);
         }
         catch (error) {
             console.log(error)
         }
+        
     }
 
     useEffect(() => {
@@ -60,8 +90,46 @@ export default function Profile(props: any) {
 
     }, [state.userInfo])
 
+    const handleBlock = async () => {
+        setLoader(true);
+        var url = `/friend/set_block?user_id=${authorId}&type=0`;
+        await axios.post(url)
+        .then(() => {
+            setLoader(false);
+            navigation.goBack();
+        })
+        .catch((err) => {
+            setLoader(false);
+            alert("Có lỗi xảy ra! Vui lòng thử lại")
+        })
+    }
+
+    const handleSendRequest = async () => {
+        setLoader(true);
+        var url = `/friend/set_request_friend?user_id=${authorId}`;
+        await axios.post(url)
+        .then(() => {
+            setLoader(false);
+            var key =  `requestFriend_${authorId}_${state.user.id}`;
+            removeDataStore(key);
+            storeDataObject(key, {check: true});
+            setIsRequest(true);
+        })
+        .catch((err) => {
+            setLoader(false);
+            alert("Có lỗi xảy ra! Vui lòng thử lại")
+        })
+    }
+
     return (
-        <ScrollView bounces={false} style={styles.container}>
+        <ScrollView bounces={false} style={styles.container}
+            refreshControl={
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handlePullDown}
+                />
+            }
+        >
             <View style={styles.infoWrapper}>
                 <View style={styles.avatarCoverWrapper}>
                     <TouchableOpacity activeOpacity={0.8}>
@@ -84,10 +152,34 @@ export default function Profile(props: any) {
                     <Text style={styles.subName}>{user.subName}</Text>
                     <Text style={styles.description}>{user.description}</Text>
                     <View style={styles.introOptionsWrapper}>
-                        <TouchableOpacity activeOpacity={0.8} style={styles.btnAddStory}>
-                            <FontAwesome5Icon size={16} color="#fff" name="plus-circle" />
-                            <Text style={{ fontSize: 16, fontWeight: '500', color: '#fff', marginLeft: 5 }}>Thêm store của bạn</Text>
-                        </TouchableOpacity>
+                        {
+                            isMe? 
+                            (
+                                <TouchableOpacity activeOpacity={0.8} style={styles.btnAddStory}>
+                                    <FontAwesome5Icon size={16} color="#fff" name="plus-circle" />
+                                    <Text style={{ fontSize: 16, fontWeight: '500', color: '#fff', marginLeft: 5 }}>Thêm store của bạn</Text>
+                                </TouchableOpacity>
+                            ) 
+                            : 
+                            (
+                                isFriend?  
+                                (
+                                    <TouchableOpacity activeOpacity={0.8} style={styles.btnAddStory} onPress={()=>{handleBlock()}}>
+                                        <FontAwesome5Icon size={16} color="#fff" name="plus-circle" />
+                                        <Text style={{ fontSize: 16, fontWeight: '500', color: '#fff', marginLeft: 5 }}>Chặn</Text>
+                                    </TouchableOpacity>
+                                ) 
+                                : 
+                                ( !isRequest && 
+                                    <TouchableOpacity activeOpacity={0.8} style={styles.btnAddStory} onPress={()=>{handleSendRequest()}}>
+                                        <FontAwesome5Icon size={16} color="#fff" name="plus-circle" />
+                                        <Text style={{ fontSize: 16, fontWeight: '500', color: '#fff', marginLeft: 5 }}>Gửi lời mời kết bạn</Text>
+                                    </TouchableOpacity>
+                                )
+                                
+                            )
+                        }
+                        
                         <TouchableOpacity activeOpacity={0.8} style={styles.btnOption}>
                             <FontAwesome5Icon size={20} color="#000" name="ellipsis-h" />
                         </TouchableOpacity>
@@ -129,6 +221,7 @@ export default function Profile(props: any) {
                     </TouchableOpacity>
                 </View>
             </View>
+            {loader && <LottieView source={require('../../assets/icon/loader2.json')} autoPlay loop />}
         </ScrollView>
     )
 }

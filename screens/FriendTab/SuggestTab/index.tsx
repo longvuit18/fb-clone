@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Pressable, 
   SafeAreaView,
@@ -9,38 +9,104 @@ import {
   FlatList, 
   TouchableOpacity,
   StatusBar,
-  ImageBackground
+  ImageBackground,
+  ActivityIndicator
 } from 'react-native';
-import { useStore } from '../../../store';
+import { useStore, removeDataStore, storeDataObject, getDataObject } from '../../../store';
+import axios from "axios";
 
 export default function SuggestTab(props) {
-  const { dispatch } = useStore();
-  const [lstRequested, setListRequested] = useState<object[]>([
-    {user_id: "11111", username: "Tesst", avatar: 'https://i.ibb.co/GsY7vbz/contacts-64.png'},
-    {user_id: "11111", username: "Tesst", avatar: 'https://i.ibb.co/GsY7vbz/contacts-64.png'}
-  ])
+  const [curIndex, setCurIndex] = useState<number>(0);
+  const [lstRequested, setListRequested] = useState<object[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [lstIndexSend, setLstIndexSend] = useState<number[]>([]);
+  const { state, dispatch } = useStore();
+
+  useEffect(() => {
+    getRequestData(0);
+  }, [])
+
+  const handleScrollEndList = async () => {
+    if(lstRequested.length >= 10){
+      setIsLoading(true);
+      var index = curIndex + 10;
+      await getRequestData(index);
+      setCurIndex(index);
+    }
+  }
+
+  const getRequestData = async (index: number) => {
+    var url = `/friend/get_list_suggested_friends?index=${index}&count=10`;
+    await axios.post(url)
+    .then(res => {
+      var data = res.data.data.list_users;
+      setListRequested([...lstRequested, ...data]);
+      setIsLoading(false);
+    })
+    .catch(err=>{
+      console.log(err);
+      setIsLoading(false);
+      alert("Có lỗi xảy ra! Vui lòng thử lại");
+    })
+  }
+
+  const handleAddRequest = async (userId : string, index: number) => {
+    setLstIndexSend([...lstIndexSend, index]);
+    var url = `/friend/set_request_friend?user_id=${userId}`;
+    await axios.post(url)
+    .then(() => {
+        var key =  `requestFriend_${userId}_${state.user.id}`;
+        removeDataStore(key);
+        storeDataObject(key, {check: true});
+    })
+    .catch((err) => {
+        alert("Có lỗi xảy ra! Vui lòng thử lại")
+    })
+  }
+
+  const handleGoToUser = (userId: string) => {
+    props.navigation.navigate("ProfileTab", {authorId: userId})
+  }
 
   const renderItemSuggest = ({item, index} : any) => {
+    var isSend = (lstIndexSend.indexOf(index) != -1);
     return (
       <View style={{flexDirection: "row", marginVertical: 8, flex: 1, alignItems: "center"}}>
-        <Image
-            source={{uri: item.avatar}}
-            style={{ width: 45, height: 45, borderRadius: 50, marginRight: 10 }}
-            resizeMode={"cover"}
-        />
+        <TouchableOpacity onPress={() => {handleGoToUser(item.user_id)}}>
+            <Image
+                source={{uri: item.avatar ? item.avatar : "https://i.ibb.co/GsY7vbz/contacts-64.png"}}
+                style={{ width: 45, height: 45, borderRadius: 50, marginRight: 10 }}
+                resizeMode={"cover"}
+            />
+        </TouchableOpacity>
+        
         <View style={{display: "flex", flexDirection: "column", flex: 1, marginLeft: 10}}>
           <View style={{flexDirection: "row", marginBottom: 10}}>
-            <Text>{item.username}</Text>
+            <Text>{item.username ? item.username : "Unknow"}</Text>
             <View style={{flex: 1}}></View>
           </View>
-          <View style={{flexDirection: "row"}}>
-            <TouchableOpacity style={styles.buttonActive}>
-              <Text style={{color: "#fff", fontWeight: "700"}}>Thêm bạn bè</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button}>
-              <Text style={{color: "#000", fontWeight: "700"}}>Gỡ</Text>
-            </TouchableOpacity>
-          </View>
+        {isSend? 
+            (
+                <View>
+                    <Text>Đã gửi yêu cầu</Text>
+                    <TouchableOpacity style={[styles.button, {width: 200, marginTop: 10}]} >
+                        <Text style={{color: "#fff", fontWeight: "700"}}>Huỷ</Text>
+                    </TouchableOpacity>
+                </View>
+            ) 
+            : 
+            (
+                <View style={{flexDirection: "row"}}>
+                    <TouchableOpacity style={styles.buttonActive} onPress={()=>{handleAddRequest(item.user_id, index)}}>
+                        <Text style={{color: "#fff", fontWeight: "700"}}>Thêm bạn bè</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.button}>
+                        <Text style={{color: "#000", fontWeight: "700"}}>Gỡ</Text>
+                    </TouchableOpacity>
+                </View>
+            )
+        }
+          
         </View>
       </View>
 
@@ -77,8 +143,10 @@ const handleBack = () => {
               numColumns={1}
               renderItem={renderItemSuggest}
               keyExtractor={(item : any, index: number) => index.toString()}
+              onEndReached={handleScrollEndList}
             />
         </View>
+        {isLoading && <ActivityIndicator size="large" color='#babec5' />}
     </SafeAreaView>
   );
 }
@@ -117,6 +185,7 @@ const styles = StyleSheet.create({
   },
 
   listItem:{
+    marginBottom: 50
   },
   btnAction: {
     backgroundColor: "#babec5",
