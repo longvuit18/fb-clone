@@ -42,7 +42,18 @@ export default function SuggestTab(props) {
     await axios.post(url)
     .then(res => {
       var data = res.data.data.list_users;
-      setListRequested([...lstRequested, ...data]);
+      data = data.filter((e, index) => {
+        return e.user_id != state.user.id;
+      })
+
+      const uniqueArray = data.filter((value, index) => {
+        const _value = JSON.stringify(value);
+        return index === data.findIndex(obj => {
+          return JSON.stringify(obj) === _value;
+        });
+      });
+
+      setListRequested([...lstRequested, ...uniqueArray]);
       setIsLoading(false);
       setRefreshing(false);
     })

@@ -43,7 +43,15 @@ export default function Friend(props) {
     await axios.post(url)
     .then(res => {
       var data = res.data.data.request;
-      setListRequested([...lstRequested, ...data]);
+
+      const uniqueArray = data.filter((value, index) => {
+        const _value = JSON.stringify(value);
+        return index === data.findIndex(obj => {
+          return JSON.stringify(obj) === _value;
+        });
+      });
+
+      setListRequested([...lstRequested, ...uniqueArray]);
       setIsLoading(false);
       setRefreshing(false);
     })

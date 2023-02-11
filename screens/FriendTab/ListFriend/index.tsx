@@ -45,16 +45,16 @@ export default function ListFriend(props) {
         console.log(state.user.id)
         var url = `/friend/get_user_friends?user_id=${state.user.id}&index=${index}&count=10`;
         await axios.post(url)
-        .then(res => {
-            console.log(res.data.data)
-        var data = res.data.data.list_users;
-        setListRequested([...lstRequested, ...data]);
-        setIsLoading(false);
+            .then(res => {
+                console.log(res.data.data)
+            var data = res.data.data.list_users;
+            setListRequested([...lstRequested, ...data]);
+            setIsLoading(false);
         })
         .catch(err=>{
-        console.log(err);
-        setIsLoading(false);
-        alert("Có lỗi xảy ra! Vui lòng thử lại");
+            console.log(err);
+            setIsLoading(false);
+            //alert("Có lỗi xảy ra! Vui lòng thử lại");
         })
     }
 
