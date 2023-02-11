@@ -23,6 +23,9 @@ import Profile from './screens/ProfileTab';
 import EditPublicInfo from './screens/ProfileTab/EditPublicInfo';
 import Search from './screens/Search'
 import ChangeInfoUser from './screens/ChangeInfoUser';
+import Friend from './screens/FriendTab';
+import SuggestTab from './screens/FriendTab/SuggestTab';
+import ListFriend from './screens/FriendTab/ListFriend';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -49,6 +52,16 @@ const ProfileTab = () => {
   );
 }
 
+const FriendTab = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="FriendTab" component={Friend} />
+      <Stack.Screen name="SuggestTab" component={SuggestTab} />
+      <Stack.Screen name="ListFriend" component={ListFriend} />
+    </Stack.Navigator>
+  );
+}
+
 const BottomNavbar = () => {
   const navigationOptions = {
     showIcon: true,
@@ -60,6 +73,8 @@ const BottomNavbar = () => {
     }}>
       <Tab.Screen options={{ tabBarIcon: ({ color, focused }) => (<Icon name='home' size={20} color={focused ? '#318bfb' : '#ddd'}></Icon>) }}
         name="Home" component={HomeTab} />
+      <Tab.Screen options={{ tabBarIcon: ({ color, focused }) => (<Icon name='user' size={20} color={focused ? '#318bfb' : '#ddd'}></Icon>) }}
+        name="Friend" component={FriendTab} />
       <Tab.Screen
         options={{ tabBarIcon: ({ color, focused }) => (<Icon name='cog' size={22} color={focused ? '#318bfb' : '#ddd'}></Icon>) }}
         name="Setting" component={Setting} />

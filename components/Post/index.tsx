@@ -155,6 +155,10 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
     }
   }
 
+  const handleGoToProfile = () => {
+    navigation.navigate("Profile", {authorId: data.authorId})
+  }
+
   // const copyContent = () => {
   //   Clipboard.setString(data.contentPost);
   // }
@@ -163,7 +167,7 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
     <SafeAreaView style={styles.container}>
       <View style={{ flex: 1 }}>
         <View style={styles.author}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={()=>{handleGoToProfile()}}>
             <Image
               style={styles.avatar}
               source={{uri: data.urlAvatar}}
