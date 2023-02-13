@@ -48,6 +48,15 @@ export default function Search(props) {
         }),
       };
       const res = await axios.post(`/search/del_saved_search?search_id=${deleteID}&all=0`)
+      var updateSearch = [];
+      // setRecentSearchings([]);
+      for (var i = 0; i < recentSearchings.length; i += 1) {
+        if (recentSearchings[i].id != deleteID) {
+          updateSearch.push(recentSearchings[i])
+        }
+      }
+      setRecentSearchings([]);
+      setRecentSearchings(updateSearch);
     } catch (error) {
       throw error;
     }
@@ -62,7 +71,9 @@ export default function Search(props) {
       const data = response.data.data;
       var res = [];
       for (var i = 0; i < data.length; i += 1) {
-        res.push(data[i]["id"]);
+        // res.push(data[i].id);
+        console.log("1:", data[i].id);
+        console.log("2:", data[i]["id"]);
       }
       setBlockList(res);
     } catch (error) {
@@ -116,7 +127,7 @@ export default function Search(props) {
     setData([...tempData]);
   }
   const searchPost = async () => {
-    console.log(keyword)
+    setData([]);
     try {
       var uri = "/search/search?index=0&count=20&keyword=" + keyword.toString();
       const posts = await axios.post(uri);
@@ -155,11 +166,10 @@ export default function Search(props) {
         }
       }).filter(elements => {
         return elements !== null;
-       });
+      });
       setData(mapData);
       setIsNull(false);
     } catch (error) {
-      setData([]);
       setIsNull(true);
       throw error;
     }
@@ -184,15 +194,15 @@ export default function Search(props) {
         // ref="_scrollRef"
         style={{ ...styles.resultWrapper, height: SCREEN_HEIGHT - STATUSBAR_HEIGHT - 50 - 48 }}
         bounces={false}>
-        {data.map((post, index) => (
-          <TouchableOpacity>
-            {isNull != true
-              ? <TouchableOpacity key={"post" + index}><Post  indexPost={index} data={post} navigation={props.navigation} callBackEvent={callBackEventPost} /></TouchableOpacity>
-              : <View style={styles.titleWrapper}>
-              <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Khoong cos bai viet</Text>
-            </View>}
-          </TouchableOpacity>
-        ))}
+        {isNull != true
+          ? data.map((post, index) => (
+            <TouchableOpacity>
+              <TouchableOpacity key={"post" + index}><Post indexPost={index} data={post} navigation={props.navigation} callBackEvent={callBackEventPost} /></TouchableOpacity>
+            </TouchableOpacity>))
+          : <View style={styles.result}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Không có bài viết</Text>
+          </View>}
+
         <View style={styles.titleWrapper}>
           <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Từ khoá đã tìm kiếm</Text>
         </View>
@@ -298,5 +308,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     paddingHorizontal: 5,
+  },
+  result: {
+    backgroundColor: '#ddd',
+    // justifyContent: 'space-between',
+    paddingHorizontal: 55,
+    height: 55,
+
+    alignItems: 'center',
+    borderBottomColor: '#ddd',
+    borderBottomWidth: 1,
+    marginTop: 0
   }
 })
