@@ -70,24 +70,8 @@ export default function Profile(props: any) {
     }
     const netInfo = useNetInfo();
 
-    const getPost = async (isLoadMore: boolean) => {
-        if (!(netInfo.isConnected || netInfo.isConnected == null)) {
-            await getDataObject("listPost").then(posts => {
-                if (posts) {
-                    setData([...posts]);
-                    setIsLoadMore(false);
-                    setIsLoading(false);
-                    setRefreshing(false);
-                }
-                else {
-                    alert("Bạn cần kết nối internet để sử dụng!");
-                }
-            })
-
-            return;
-        }
+    const getPost = async (isLoadMore: boolean, isRefresh: boolean, isFirst: boolean) => {
         var userId = state.user.id;
-
         let last_id = "0";
         if (!refreshing && isLoadMore) {
             if (data.length > 0) {
@@ -100,10 +84,9 @@ export default function Profile(props: any) {
             if (!isMe) {
                 id = authorId
             }
-            var uri = "/search/search?index=0&count=20&keyword=b"
-            const posts = await axios.post(uri);
-            console.log(posts)
-            const mapData = posts.data.data.map((post: any) => {
+
+            const posts = await axios.post(`/post/get_list_posts?last_id=${last_id}&index=0&count=100`)
+            const mapData = posts.data.data.posts.map((post: any) => {
                 if (post.author.id == id) {
                     let createdDate = new Date(Number.parseInt((post.created * 1000).toString()));
                     let now = new Date();
@@ -112,14 +95,14 @@ export default function Profile(props: any) {
                     let numberImage = post.image ? post.image.length : 0;
                     if (numberImage > 0) {
                         post.image.forEach((image: any) => {
-                            return urlImage.push(image)
+                            return urlImage.push(image.url)
                         })
                     }
 
                     return ({
                         id: post.id,
-                        authorName: post.author.username,
-                        urlAvatar: post.author.avatar,
+                        authorName: post.author.username ? post.author.username : (post.author.id == userId ? 'Me' : 'Unknow'),
+                        urlAvatar: post.author.avatar ? post.author.avatar : 'https://i.ibb.co/GsY7vbz/contacts-64.png',
                         contentPost: post.described,
                         numberImage: post.image ? post.image.length : 0,
                         timePost: timePost,
@@ -139,54 +122,47 @@ export default function Profile(props: any) {
             }).filter(elements => {
                 return elements !== null;
             });
-            if (isLoadMore) {
-                var listPost = [...data, ...mapData];
-                const uniqueArray = listPost.filter((value, index) => {
-                    const _value = JSON.stringify(value);
-                    return index === listPost.findIndex(obj => {
-                        return JSON.stringify(obj) === _value;
-                    });
+            var listPost = [];
+            if(isRefresh || isFirst){
+                listPost = [...mapData];
+            }
+            else{
+                listPost = [...data, ...mapData];
+            }
+            const uniqueArray = listPost.filter((value, index) => {
+                const _value = JSON.stringify(value);
+                return index === listPost.findIndex(obj => {
+                    return JSON.stringify(obj) === _value;
                 });
-                setData(uniqueArray);
-                setIsLoadMore(false);
-                setIsLoading(false);
-            }
-            else {
-                setData(mapData);
-                await removeDataStore("listPost");
-                await storeDataObject("listPost", mapData);
-            }
+            });
+            setData([...[]])
+            setData([...uniqueArray]);
+            setIsLoading(false);
             setRefreshing(false);
+            setLoader(false);
         } catch (error) {
+            setLoader(false);
             //console.error(error.response.data)
             throw error;
         }
     }
 
-    const handleLoadMore = async (event: any) => {
-        const currentY = event.nativeEvent.contentOffset.y;
-        if (currentY >= 2500 && !isLoadMore) {
-            setIsLoadMore(true);
-            await getPost(true);
-            setIsLoadMore(false);
-        }
-    }
     const handleScrollEndList = async () => {
-        if (!isLoadMore) {
-            setIsLoadMore(true);
-            await getPost(true);
-            setIsLoadMore(false);
-        }
+        setIsLoadMore(true);
+        await getPost(true, false, false);
+        setIsLoadMore(false);
     }
-    console.log(authorId)
+
     const isMe = (authorId == state.user.id || authorId == null);
     const [isRequest, setIsRequest] = useState<boolean>(false)
 
     const [isFriend, setIsFriend] = useState<boolean>(false);
     useEffect(() => {
+        setLoader(true);
+        setIsLoading(true);
         getCacheRequest();
         getProfile();
-        getPost(false);
+        getPost(false, false, true);
     }, [authorId])
 
     const getCacheRequest = async () => {
@@ -201,11 +177,25 @@ export default function Profile(props: any) {
 
     }
 
-    const handlePullDown = () => {
+    const handlePullDown = async () => {
         setRefreshing(true);
-        getProfile();
+        await getProfile();
+        await getPost(false, true, false);
     }
+
+
     const getProfile = async () => {
+        setUser({
+            cover_image: undefined,
+            avatar: undefined,
+            username: "",
+            subName: "",
+            description: "",
+            address: "",
+            city: "",
+            listing: "",
+            country: "",
+        });
         try {
             var id = state.user.id;
             if (!isMe) {
@@ -274,13 +264,23 @@ export default function Profile(props: any) {
                 alert("Có lỗi xảy ra! Vui lòng thử lại")
             })
     }
-    const callBackEventPost = (index: number) => {
-        var tempData = data;
-        tempData.splice(index, 1);
-        //Chả hiểu sao nó lại không ăn render. nên phải xoá hết đi rồi mới vẽ lại
-        setData([]);
-        setData([...tempData]);
+    const callBackEventPost = async (type: any, index: number) => {
+        if(type == 0){
+            var tempData = data;
+            tempData.splice(index, 1);
+            //Chả hiểu sao nó lại không ăn render. nên phải xoá hết đi rồi mới vẽ lại
+            setData([]);
+            setData([...tempData]);
+          }
+          else{
+            await handlePullDown();
+          }
     }
+
+    const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}) => {
+        const paddingToBottom = 20;
+        return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -288,7 +288,6 @@ export default function Profile(props: any) {
                 <ActivityIndicator /> :
                 <ScrollView bounces={false} style={styles.scrollView}
                     showsVerticalScrollIndicator={false}
-                    stickyHeaderIndices={[1]}
                     scrollEnabled={true}
                     contentContainerStyle={{ flexGrow: 1 }}
                     refreshControl={
@@ -297,8 +296,11 @@ export default function Profile(props: any) {
                             onRefresh={handlePullDown}
                         />
                     }
-                    onScroll={handleLoadMore}
-                    onScrollEndDrag={handleScrollEndList}
+                    onScroll={({nativeEvent}) => {
+                        if (isCloseToBottom(nativeEvent)) {
+                            handleScrollEndList();
+                        }
+                    }}
                     scrollEventThrottle={16}
                 >
                     <View style={styles.infoWrapper}>
@@ -403,7 +405,7 @@ export default function Profile(props: any) {
                         </TouchableOpacity>
                     ))}
                     
-                    {loader && <LottieView source={require('../../assets/icon/loader2.json')} autoPlay loop />}
+                    {loader && <LottieView source={require('../../assets/icon/loader.json')} autoPlay loop />}
                     {isLoading && <ActivityIndicator size="large" color='#babec5' />}
                 </ScrollView>
             }

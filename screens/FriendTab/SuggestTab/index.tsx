@@ -25,19 +25,19 @@ export default function SuggestTab(props) {
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   useEffect(() => {
-    getRequestData(0);
+    getRequestData(0, false);
   }, [])
 
   const handleScrollEndList = async () => {
     if(lstRequested.length >= 10){
       setIsLoading(true);
       var index = curIndex + 10;
-      await getRequestData(index);
+      await getRequestData(index, false);
       setCurIndex(index);
     }
   }
 
-  const getRequestData = async (index: number) => {
+  const getRequestData = async (index: number, isReload: any) => {
     var url = `/friend/get_list_suggested_friends?index=${index}&count=10`;
     await axios.post(url)
     .then(res => {
@@ -52,8 +52,13 @@ export default function SuggestTab(props) {
           return JSON.stringify(obj) === _value;
         });
       });
-
-      setListRequested([...lstRequested, ...uniqueArray]);
+      setListRequested([...[]]);
+      if(isReload){
+        setListRequested([...uniqueArray]);
+      }
+      else{
+        setListRequested([...lstRequested, ...uniqueArray]);
+      }
       setIsLoading(false);
       setRefreshing(false);
     })
@@ -68,9 +73,9 @@ export default function SuggestTab(props) {
   const handlePullDown = () => {
     setRefreshing(true);
     setCurIndex(0);
-    setListRequested([])
-    setLstIndexSend([])
-    getRequestData(0);
+    setListRequested([...[]])
+    setLstIndexSend([...[]])
+    getRequestData(0, true);
   }
 
   const handleAddRequest = async (userId : string, index: number) => {
@@ -88,7 +93,8 @@ export default function SuggestTab(props) {
   }
 
   const handleGoToUser = (userId: string) => {
-    props.navigation.navigate("ProfileTab", {authorId: userId})
+    props.navigation.setParams({authorId: userId})
+    props.navigation.navigate('Profile', { screen: 'ProfileTab', params: { authorId: userId }})
   }
 
   const renderItemSuggest = ({item, index} : any) => {
@@ -167,6 +173,7 @@ const handleBack = () => {
               renderItem={renderItemSuggest}
               keyExtractor={(item : any, index: number) => index.toString()}
               onEndReached={handleScrollEndList}
+              onEndReachedThreshold={16}
               refreshControl={
                 <RefreshControl
                     refreshing={refreshing}

@@ -20,6 +20,7 @@ import ViewPost from "./ViewPost";
 //import Clipboard from '@react-native-community/clipboard';
 import axios from "axios";
 import {useNetInfo} from "@react-native-community/netinfo";
+import { useStore } from '../../store';
 
 function Post({indexPost, data, navigation, callBackEvent }: any) {
   const [visibleOption, setVisibleOption] = useState(false);
@@ -52,7 +53,7 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
     liked: data.isLiked,
     numberLike: Number.parseInt(data.numberLike)
   })
-
+  const { state, dispatch } = useStore();
   const netInfo = useNetInfo();
 
   const onPress = () => {
@@ -106,17 +107,21 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
       ]);
     }
     else if(type == 1){
-      navigation.navigate("UploadPost", {id: data.id, mode: 2})
+      navigation.navigate("UploadPost", {id: data.id, mode: 2, onGoBack: () => {handleCallBack();}})
     }
     else if(type == 2){
       navigation.navigate("Report", {id: data.id, name: data.authorName, userID: data.authorId})
     }
   }
 
+  const handleCallBack = () => {
+    callBackEvent(1);
+  }
+
   const handleDeletePost = async () => {
     await axios.post("/post/delete_post?id=" + data.id)
     .then(() => {
-      callBackEvent(indexPost);
+      callBackEvent(0, indexPost);
     })
     .catch((err) => {
       alert("Có lỗi xảy ra. Vui lòng thử lại!")
@@ -156,7 +161,7 @@ function Post({indexPost, data, navigation, callBackEvent }: any) {
   }
 
   const handleGoToProfile = () => {
-    navigation.navigate("ProfileTab", {authorId: data.authorId})
+    navigation.navigate('Profile', { screen: 'ProfileTab', params: { authorId: data.authorId } })
   }
 
   // const copyContent = () => {

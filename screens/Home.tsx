@@ -77,7 +77,6 @@ function HomeScreen(props: any) {
 
     try {
       const posts = await axios.post(`/post/get_list_posts?last_id=${last_id}&index=0&count=20`);
-      
       const mapData = posts.data.data.posts.map((post: any) => {
         let createdDate = new Date(Number.parseInt((post.created * 1000).toString()));
         let now = new Date();
@@ -161,12 +160,17 @@ function HomeScreen(props: any) {
     }
   }
 
-  const callBackEventPost = (index: any) => {
-    var tempData = data;
-    tempData.splice(index, 1);
-    //Chả hiểu sao nó lại không ăn render. nên phải xoá hết đi rồi mới vẽ lại
-    setData([]);
-    setData([...tempData]);
+  const callBackEventPost = async (type: any, index: any) => {
+    if(type == 0){
+      var tempData = data;
+      tempData.splice(index, 1);
+      //Chả hiểu sao nó lại không ăn render. nên phải xoá hết đi rồi mới vẽ lại
+      setData([]);
+      setData([...tempData]);
+    }
+    else{
+      await handlePullDown();
+    }
   }
 
   React.useEffect(() => {
@@ -175,7 +179,7 @@ function HomeScreen(props: any) {
 
   const handlePullDown = async () => {
     setRefreshing(true);
-    setData([]);
+    await setData([]);
     getPosts(false);
   }
 
@@ -195,6 +199,15 @@ function HomeScreen(props: any) {
       setIsLoadMore(false);
     }
   }
+
+  React.useEffect(() => {
+    const unsubscribe = props.navigation.addListener('focus', () => {
+      handlePullDown();
+    });
+
+    // Return the function to unsubscribe from the event so it gets removed on unmount
+    return unsubscribe;
+  }, [props.navigation]);
 
   var lstStory = [
     {
@@ -239,6 +252,10 @@ function HomeScreen(props: any) {
     },
   ];
 
+  const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}) => {
+    const paddingToBottom = 20;
+    return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
+  };
   
   return (
     <SafeAreaView style={styles.container}>
@@ -256,8 +273,11 @@ function HomeScreen(props: any) {
               onRefresh={handlePullDown}
             />
           }
-          onScroll={handleLoadMore}
-          onScrollEndDrag={handleScrollEndList}
+          onScroll={({nativeEvent}) => {
+            if (isCloseToBottom(nativeEvent)) {
+              handleScrollEndList();
+            }
+          }}
           scrollEventThrottle={16}
           
           >
@@ -287,7 +307,7 @@ function HomeScreen(props: any) {
           </View> 
           <View></View>
           <View style={styles.avatarContainer}>
-            <TouchableOpacity onPress={() => {props.navigation.navigate("ProfileTab")}}>
+            <TouchableOpacity onPress={() => {props.navigation.navigate('Profile', { screen: 'ProfileTab' })}}>
               <Image
                 resizeMode="cover"
                 style={styles.avatar}
