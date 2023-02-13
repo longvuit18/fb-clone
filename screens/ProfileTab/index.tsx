@@ -1,11 +1,12 @@
 import React, { useEffect, PureComponent, useState } from 'react'
-import { Text, StyleSheet, View, Image, TouchableOpacity, ScrollView, RefreshControl } from 'react-native'
+import { Text, StyleSheet, View, Image, TouchableOpacity, ScrollView, RefreshControl, StatusBar, ActivityIndicator, SafeAreaView } from 'react-native'
 import { SCREEN_WIDTH, SCREEN_HEIGHT, STATUSBAR_HEIGHT } from '../../constants'
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 import { getData, getDataObject, IUser, useStore, storeDataObject, removeDataStore } from '../../store';
 import axios from "axios";
 import LottieView from 'lottie-react-native';
-import Post from '../../components/Post'
+import Post from '../../components/Post';
+import { useNetInfo } from "@react-native-community/netinfo";
 
 interface IPost {
     id?: string;
@@ -41,7 +42,10 @@ export default function Profile(props: any) {
     const [refreshing, setRefreshing] = useState<boolean>(false);
     const [data, setData] = React.useState<IPost[]>([])
     const { state, dispatch } = useStore();
-    const authorId = route.params ? (route.params.authorId ? route.params.authorId: null) : null;
+    const authorId = route.params ? (route.params.authorId ? route.params.authorId : null) : null;
+
+    const [isLoadMore, setIsLoadMore] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const getTimeBetweenTwoDate = (firstDate: Date, secondDate: Date) => {
         const seconds = (secondDate.getTime() - firstDate.getTime()) / 1000;
@@ -64,10 +68,36 @@ export default function Profile(props: any) {
             return firstDate.getDate() + " thg " + (firstDate.getMonth() + 1) + ", " + firstDate.getUTCFullYear()
         }
     }
-    const getPost = async () => {
+    const netInfo = useNetInfo();
+
+    const getPost = async (isLoadMore: boolean) => {
+        if (!(netInfo.isConnected || netInfo.isConnected == null)) {
+            await getDataObject("listPost").then(posts => {
+                if (posts) {
+                    setData([...posts]);
+                    setIsLoadMore(false);
+                    setIsLoading(false);
+                    setRefreshing(false);
+                }
+                else {
+                    alert("Bạn cần kết nối internet để sử dụng!");
+                }
+            })
+
+            return;
+        }
+        var userId = state.user.id;
+
+        let last_id = "0";
+        if (!refreshing && isLoadMore) {
+            if (data.length > 0) {
+                last_id = data[data.length - 1].id;
+            }
+            setIsLoading(true);
+        }
         try {
             var id = state.user.id;
-            if(!isMe){
+            if (!isMe) {
                 id = authorId
             }
             var uri = "/search/search?index=0&count=20&keyword=b"
@@ -109,13 +139,45 @@ export default function Profile(props: any) {
             }).filter(elements => {
                 return elements !== null;
             });
-            setData(mapData);
+            if (isLoadMore) {
+                var listPost = [...data, ...mapData];
+                const uniqueArray = listPost.filter((value, index) => {
+                    const _value = JSON.stringify(value);
+                    return index === listPost.findIndex(obj => {
+                        return JSON.stringify(obj) === _value;
+                    });
+                });
+                setData(uniqueArray);
+                setIsLoadMore(false);
+                setIsLoading(false);
+            }
+            else {
+                setData(mapData);
+                await removeDataStore("listPost");
+                await storeDataObject("listPost", mapData);
+            }
+            setRefreshing(false);
         } catch (error) {
             //console.error(error.response.data)
             throw error;
         }
     }
 
+    const handleLoadMore = async (event: any) => {
+        const currentY = event.nativeEvent.contentOffset.y;
+        if (currentY >= 2500 && !isLoadMore) {
+            setIsLoadMore(true);
+            await getPost(true);
+            setIsLoadMore(false);
+        }
+    }
+    const handleScrollEndList = async () => {
+        if (!isLoadMore) {
+            setIsLoadMore(true);
+            await getPost(true);
+            setIsLoadMore(false);
+        }
+    }
     console.log(authorId)
     const isMe = (authorId == state.user.id || authorId == null);
     const [isRequest, setIsRequest] = useState<boolean>(false)
@@ -124,19 +186,19 @@ export default function Profile(props: any) {
     useEffect(() => {
         getCacheRequest();
         getProfile();
-        getPost();
+        getPost(false);
     }, [authorId])
 
     const getCacheRequest = async () => {
-        var key =  `requestFriend_${authorId}_${state.user.id}`;
+        var key = `requestFriend_${authorId}_${state.user.id}`;
         var obj = await getDataObject(key)
-        if(obj){
+        if (obj) {
             setIsRequest(true);
         }
-        else{
+        else {
             setIsRequest(false);
         }
-        
+
     }
 
     const handlePullDown = () => {
@@ -146,7 +208,7 @@ export default function Profile(props: any) {
     const getProfile = async () => {
         try {
             var id = state.user.id;
-            if(!isMe){
+            if (!isMe) {
                 id = authorId
             }
             const res = await axios.post(`/user/get_user_info?user_id=${id}`)
@@ -172,7 +234,7 @@ export default function Profile(props: any) {
         catch (error) {
             console.log(error)
         }
-        
+
     }
 
     useEffect(() => {
@@ -186,31 +248,31 @@ export default function Profile(props: any) {
         setLoader(true);
         var url = `/friend/set_block?user_id=${authorId}&type=0`;
         await axios.post(url)
-        .then(() => {
-            setLoader(false);
-            navigation.goBack();
-        })
-        .catch((err) => {
-            setLoader(false);
-            alert("Có lỗi xảy ra! Vui lòng thử lại")
-        })
+            .then(() => {
+                setLoader(false);
+                navigation.goBack();
+            })
+            .catch((err) => {
+                setLoader(false);
+                alert("Có lỗi xảy ra! Vui lòng thử lại")
+            })
     }
 
     const handleSendRequest = async () => {
         setLoader(true);
         var url = `/friend/set_request_friend?user_id=${authorId}`;
         await axios.post(url)
-        .then(() => {
-            setLoader(false);
-            var key =  `requestFriend_${authorId}_${state.user.id}`;
-            removeDataStore(key);
-            storeDataObject(key, {check: true});
-            setIsRequest(true);
-        })
-        .catch((err) => {
-            setLoader(false);
-            alert("Có lỗi xảy ra! Vui lòng thử lại")
-        })
+            .then(() => {
+                setLoader(false);
+                var key = `requestFriend_${authorId}_${state.user.id}`;
+                removeDataStore(key);
+                storeDataObject(key, { check: true });
+                setIsRequest(true);
+            })
+            .catch((err) => {
+                setLoader(false);
+                alert("Có lỗi xảy ra! Vui lòng thử lại")
+            })
     }
     const callBackEventPost = (index: number) => {
         var tempData = data;
@@ -221,122 +283,141 @@ export default function Profile(props: any) {
     }
 
     return (
-        <ScrollView bounces={false} style={styles.container}
-            refreshControl={
-                <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={handlePullDown}
-                />
-            }
-        >
-            <View style={styles.infoWrapper}>
-                <View style={styles.avatarCoverWrapper}>
-                    <TouchableOpacity activeOpacity={0.8}>
-                        <Image style={styles.cover} source={{ uri: user.cover_image }} />
-                    </TouchableOpacity>
-                    {/* <TouchableOpacity style={styles.btnChangeCover}>
+        <SafeAreaView style={styles.container}>
+            {refreshing ?
+                <ActivityIndicator /> :
+                <ScrollView bounces={false} style={styles.scrollView}
+                    showsVerticalScrollIndicator={false}
+                    stickyHeaderIndices={[1]}
+                    scrollEnabled={true}
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={handlePullDown}
+                        />
+                    }
+                    onScroll={handleLoadMore}
+                    onScrollEndDrag={handleScrollEndList}
+                    scrollEventThrottle={16}
+                >
+                    <View style={styles.infoWrapper}>
+                        <View style={styles.avatarCoverWrapper}>
+                            <TouchableOpacity activeOpacity={0.8}>
+                                <Image style={styles.cover} source={{ uri: user.cover_image }} />
+                            </TouchableOpacity>
+                            {/* <TouchableOpacity style={styles.btnChangeCover}>
                         <FontAwesome5Icon size={18} name="camera" />
                     </TouchableOpacity> */}
-                    <View style={styles.avatarWrapper}>
-                        <TouchableOpacity activeOpacity={0.9}>
-                            <Image style={styles.avatar} source={{ uri: user.avatar }} />
-                        </TouchableOpacity>
-                        {/* <TouchableOpacity style={styles.btnChangeAvatar}>
+                            <View style={styles.avatarWrapper}>
+                                <TouchableOpacity activeOpacity={0.9}>
+                                    <Image style={styles.avatar} source={{ uri: user.avatar }} />
+                                </TouchableOpacity>
+                                {/* <TouchableOpacity style={styles.btnChangeAvatar}>
                             <FontAwesome5Icon size={18} name="camera" />
                         </TouchableOpacity> */}
-                    </View>
-                </View>
-                <View style={styles.introWrapper}>
-                    <Text style={styles.name}>{user.username}</Text>
-                    <Text style={styles.subName}>{user.subName}</Text>
-                    <Text style={styles.description}>{user.description}</Text>
-                    <View style={styles.introOptionsWrapper}>
-                        {
-                            isMe? 
-                            (
-                                <TouchableOpacity activeOpacity={0.8} style={styles.btnAddStory}>
-                                    <FontAwesome5Icon size={16} color="#fff" name="plus-circle" />
-                                    <Text style={{ fontSize: 16, fontWeight: '500', color: '#fff', marginLeft: 5 }}>Thêm store của bạn</Text>
+                            </View>
+                        </View>
+                        <View style={styles.introWrapper}>
+                            <Text style={styles.name}>{user.username}</Text>
+                            <Text style={styles.subName}>{user.subName}</Text>
+                            <Text style={styles.description}>{user.description}</Text>
+                            <View style={styles.introOptionsWrapper}>
+                                {
+                                    isMe ?
+                                        (
+                                            <TouchableOpacity activeOpacity={0.8} style={styles.btnAddStory}>
+                                                <FontAwesome5Icon size={16} color="#fff" name="plus-circle" />
+                                                <Text style={{ fontSize: 16, fontWeight: '500', color: '#fff', marginLeft: 5 }}>Thêm store của bạn</Text>
+                                            </TouchableOpacity>
+                                        )
+                                        :
+                                        (
+                                            isFriend ?
+                                                (
+                                                    <TouchableOpacity activeOpacity={0.8} style={styles.btnAddStory} onPress={() => { handleBlock() }}>
+                                                        <FontAwesome5Icon size={16} color="#fff" name="plus-circle" />
+                                                        <Text style={{ fontSize: 16, fontWeight: '500', color: '#fff', marginLeft: 5 }}>Chặn</Text>
+                                                    </TouchableOpacity>
+                                                )
+                                                :
+                                                (!isRequest &&
+                                                    <TouchableOpacity activeOpacity={0.8} style={styles.btnAddStory} onPress={() => { handleSendRequest() }}>
+                                                        <FontAwesome5Icon size={16} color="#fff" name="plus-circle" />
+                                                        <Text style={{ fontSize: 16, fontWeight: '500', color: '#fff', marginLeft: 5 }}>Gửi lời mời kết bạn</Text>
+                                                    </TouchableOpacity>
+                                                )
+
+                                        )
+                                }
+
+                                <TouchableOpacity activeOpacity={0.8} style={styles.btnOption}>
+                                    <FontAwesome5Icon size={20} color="#000" name="ellipsis-h" />
                                 </TouchableOpacity>
-                            ) 
-                            : 
-                            (
-                                isFriend?  
-                                (
-                                    <TouchableOpacity activeOpacity={0.8} style={styles.btnAddStory} onPress={()=>{handleBlock()}}>
-                                        <FontAwesome5Icon size={16} color="#fff" name="plus-circle" />
-                                        <Text style={{ fontSize: 16, fontWeight: '500', color: '#fff', marginLeft: 5 }}>Chặn</Text>
-                                    </TouchableOpacity>
-                                ) 
-                                : 
-                                ( !isRequest && 
-                                    <TouchableOpacity activeOpacity={0.8} style={styles.btnAddStory} onPress={()=>{handleSendRequest()}}>
-                                        <FontAwesome5Icon size={16} color="#fff" name="plus-circle" />
-                                        <Text style={{ fontSize: 16, fontWeight: '500', color: '#fff', marginLeft: 5 }}>Gửi lời mời kết bạn</Text>
-                                    </TouchableOpacity>
-                                )
-                                
-                            )
-                        }
-                        
-                        <TouchableOpacity activeOpacity={0.8} style={styles.btnOption}>
-                            <FontAwesome5Icon size={20} color="#000" name="ellipsis-h" />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-                <View style={styles.introListWrapper}>
-                    <View style={styles.introLine}>
-                        <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="home" />
-                        <Text style={styles.introLineText}>
-                            Sống ở <Text style={styles.introHightLight}>{user.address}</Text>
-                        </Text>
-                    </View>
-                    <View style={styles.introLine}>
-                        <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="map-marker-alt" />
-                        <Text style={styles.introLineText}>
-                            From <Text style={styles.introHightLight}>{user.city}</Text>
-                        </Text>
-                    </View>
-                    <View style={styles.introLine}>
-                        <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="globe" />
-                        <Text style={styles.introLineText}>
-                            Đất nước <Text style={styles.introHightLight}>{user.country}</Text>
-                        </Text>
-                    </View>
-                    {/* <View style={styles.introLine}>
+                            </View>
+                        </View>
+                        <View style={styles.introListWrapper}>
+                            <View style={styles.introLine}>
+                                <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="home" />
+                                <Text style={styles.introLineText}>
+                                    Sống ở <Text style={styles.introHightLight}>{user.address}</Text>
+                                </Text>
+                            </View>
+                            <View style={styles.introLine}>
+                                <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="map-marker-alt" />
+                                <Text style={styles.introLineText}>
+                                    From <Text style={styles.introHightLight}>{user.city}</Text>
+                                </Text>
+                            </View>
+                            <View style={styles.introLine}>
+                                <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="globe" />
+                                <Text style={styles.introLineText}>
+                                    Đất nước <Text style={styles.introHightLight}>{user.country}</Text>
+                                </Text>
+                            </View>
+                            {/* <View style={styles.introLine}>
                         <FontAwesome5Icon size={20} color="#333" style={styles.introIcon} name="rss" />
                         <Text style={styles.introLineText}>
                             Theo dõi <Text style={styles.introHightLight}>{user.listing} </Text> theo dõi
                         </Text>
                     </View> */}
 
-                </View>
-                <View style={{ paddingVertical: 20, borderBottomWidth: 0.5, borderBottomColor: '#ddd' }}>
-                    {isMe && 
-                        <TouchableOpacity
-                            activeOpacity={0.8}
-                            style={styles.btnEditPublicDetail}
-                            onPress={() => props.navigation.navigate("EditPublicInfo", { user: user })}>
-                            <Text style={{ color: '#318bfb', fontSize: 16, fontWeight: '500' }}>Chỉnh sửa thông tin cá nhân</Text>
+                        </View>
+                        <View style={{ paddingVertical: 20, borderBottomWidth: 0.5, borderBottomColor: '#ddd' }}>
+                            {isMe &&
+                                <TouchableOpacity
+                                    activeOpacity={0.8}
+                                    style={styles.btnEditPublicDetail}
+                                    onPress={() => props.navigation.navigate("EditPublicInfo", { user: user })}>
+                                    <Text style={{ color: '#318bfb', fontSize: 16, fontWeight: '500' }}>Chỉnh sửa thông tin cá nhân</Text>
+                                </TouchableOpacity>
+                            }
+
+                        </View>
+                    </View>
+                    {data.map((post, index) => (
+                        <TouchableOpacity key={"post" + index}>
+                            {data.length !== 0
+                                ? (<Post indexPost={index} data={post} navigation={props.navigation} callBackEvent={callBackEventPost} />)
+                                : (<View><Text>Không có bài viết</Text></View>)}
                         </TouchableOpacity>
-                    }
+                    ))}
                     
-                </View>
-            </View>
-            {data.map((post, index) => (
-                    <TouchableOpacity key={"post" + index}>
-                        {data.length !== 0
-                            ? (<Post indexPost={index} data={post} navigation={props.navigation} callBackEvent={callBackEventPost} />)
-                            : (<View><Text>Không có bài viết</Text></View>)}
-                    </TouchableOpacity>
-                ))}
-            {loader && <LottieView source={require('../../assets/icon/loader2.json')} autoPlay loop />}
-        </ScrollView>
+                    {loader && <LottieView source={require('../../assets/icon/loader2.json')} autoPlay loop />}
+                    {isLoading && <ActivityIndicator size="large" color='#babec5' />}
+                </ScrollView>
+            }
+        </SafeAreaView>
     )
 }
 const styles = StyleSheet.create({
     container: {
-
+        flex: 1,
+        paddingTop: StatusBar.currentHeight,
+    },
+    scrollView: {
+        flex: 1,
+        backgroundColor: '#cbccd1',
     },
     infoWrapper: {
         paddingTop: STATUSBAR_HEIGHT,
