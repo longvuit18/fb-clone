@@ -26,6 +26,7 @@ import ChangeInfoUser from './screens/ChangeInfoUser';
 import Friend from './screens/FriendTab';
 import SuggestTab from './screens/FriendTab/SuggestTab';
 import ListFriend from './screens/FriendTab/ListFriend';
+import Report from './components/Report';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -39,7 +40,7 @@ const HomeTab = () => {
       <Stack.Screen name="UploadPost" component={UploadPost} />
       <Stack.Screen name="PostComment" component={PostComment} />
       <Stack.Screen name="Search" component={Search} />
-      <Stack.Screen name="ProfileTab" component={Profile} />
+      <Stack.Screen name="Report" component={Report} />
     </Stack.Navigator>
   );
 }
@@ -49,6 +50,7 @@ const ProfileTab = () => {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ProfileTab" component={Profile} />
       <Stack.Screen name="EditPublicInfo" component={EditPublicInfo} />
+      <Stack.Screen name="UploadPost" component={UploadPost} />
     </Stack.Navigator>
   );
 }

@@ -25,7 +25,7 @@ export default function Friend(props) {
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   useEffect(() => {
-    getRequestData(0);
+    getRequestData(0, false);
 
   }, [])
 
@@ -33,25 +33,30 @@ export default function Friend(props) {
     if(lstRequested.length >= 10){
       setIsLoading(true);
       var index = curIndex + 10;
-      await getRequestData(index);
+      await getRequestData(index, false);
       setCurIndex(index);
     }
   }
 
-  const getRequestData = async (index: number) => {
+  const getRequestData = async (index: number, isReload: any) => {
+    console.log("aaaa")
     var url = `/friend/get_requested_friends?index=${index}&count=10`;
     await axios.post(url)
     .then(res => {
       var data = res.data.data.request;
-
       const uniqueArray = data.filter((value, index) => {
         const _value = JSON.stringify(value);
         return index === data.findIndex(obj => {
           return JSON.stringify(obj) === _value;
         });
       });
-
-      setListRequested([...lstRequested, ...uniqueArray]);
+      setListRequested([...[]]);
+      if(isReload){
+        setListRequested([...uniqueArray]);
+      }
+      else{
+        setListRequested([...lstRequested, ...uniqueArray]);
+      }
       setIsLoading(false);
       setRefreshing(false);
     })
@@ -65,10 +70,11 @@ export default function Friend(props) {
   }
 
   const handlePullDown = () => {
+    console.log("aaaaa")
     setRefreshing(true);
     setCurIndex(0);
-    setListRequested([])
-    getRequestData(0);
+    setListRequested([...[]])
+    getRequestData(0, true);
   }
 
   const handleAccept = async (accept: boolean, userId: any, index: number) => {
@@ -84,7 +90,7 @@ export default function Friend(props) {
     var url = `/friend/set_accept_friend?user_id=${userId}&is_accept=${type}`;
     await axios.post(url)
     .then(res => {
-      var key =  `requestFriend_${userId}_${state.user.id}`;
+      var key =  `requestFriend_${state.user.id}_${userId}`;
       removeDataStore(key);
     })
     .catch(err=>{
@@ -94,7 +100,7 @@ export default function Friend(props) {
   }
 
   const handleGoToUser = (userId: string) => {
-    props.navigation.navigate("ProfileTab", {authorId: userId})
+    props.navigation.navigate('Profile', { screen: 'ProfileTab', params: { authorId: userId } })
   }
 
   const renderItemRequested = ({item, index} : any) => {
@@ -156,28 +162,36 @@ export default function Friend(props) {
     )
 }
 
-const getTimeBetweenTwoDate = (firstDate : Date, secondDate: Date) => {
-  const seconds = (secondDate.getTime() - firstDate.getTime()) / 1000;
-  if(seconds < 60){
-    return "Vừa xong";
+  const getTimeBetweenTwoDate = (firstDate : Date, secondDate: Date) => {
+    const seconds = (secondDate.getTime() - firstDate.getTime()) / 1000;
+    if(seconds < 60){
+      return "Vừa xong";
+    }
+    else if(seconds < 3600){
+      let minutes = Math.ceil(seconds / 60);
+      return minutes + " phút";
+    }
+    else if(seconds < 86400){
+      let hours = Math.ceil(seconds / 3600);
+      return hours + " giờ";
+    }
+    else if(seconds < 432000){
+      let days = Math.ceil(seconds / 86400);
+      return days + " ngày";
+    }
+    else{
+      return firstDate.getDate() + " thg " + (firstDate.getMonth()+1) + ", " + firstDate.getUTCFullYear()
+    }
   }
-  else if(seconds < 3600){
-    let minutes = Math.ceil(seconds / 60);
-    return minutes + " phút";
-  }
-  else if(seconds < 86400){
-    let hours = Math.ceil(seconds / 3600);
-    return hours + " giờ";
-  }
-  else if(seconds < 432000){
-    let days = Math.ceil(seconds / 86400);
-    return days + " ngày";
-  }
-  else{
-    return firstDate.getDate() + " thg " + (firstDate.getMonth()+1) + ", " + firstDate.getUTCFullYear()
-  }
-}
 
+  useEffect(() => {
+    const unsubscribe = props.navigation.addListener('focus', () => {
+      handlePullDown();
+    });
+
+    // Return the function to unsubscribe from the event so it gets removed on unmount
+    return unsubscribe;
+  }, [props.navigation]);
 
 
   return (
@@ -196,7 +210,7 @@ const getTimeBetweenTwoDate = (firstDate : Date, secondDate: Date) => {
                 <TouchableOpacity style={styles.btnAction} onPress={()=>{props.navigation.navigate("SuggestTab")}}>
                     <Text style={{fontWeight: "700", color: "#000"}}>Gợi ý</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.btnAction} onPress={()=>{props.navigation.navigate("ListFriend")}}>
+                <TouchableOpacity style={styles.btnAction} onPress={()=>{props.navigation.navigate("ListFriend", {onGoBack: () => {handlePullDown()}})}}>
                     <Text style={{fontWeight: "700", color: "#000"}}>Tất cả bạn bè</Text>
                 </TouchableOpacity>
             </View>
